@@ -5,7 +5,7 @@ ser = serial.Serial("/dev/ttyS0", 115200)
 range = 0 
 # 1 if object within 100 cm, 2 if within 50
 def read_data():
-    time.sleep(.01)  # Sleep 10ms
+    time.sleep(1)  # Sleep 1000ms
     while True:
         counter = ser.in_waiting # count the number of bytes of the serial port
         if counter > 8:
