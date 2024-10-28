@@ -2,9 +2,9 @@ import serial # uart
 import time
 ser = serial.Serial("/dev/ttyS0", 115200)
 # we define a new function that will get the data from LiDAR and publish it
-prev = 0
 def read_data():
     time.sleep(1)  # Sleep 1000ms
+    prev = 0
     while True:
         counter = ser.in_waiting # count the number of bytes of the serial port
         if counter > 8:
