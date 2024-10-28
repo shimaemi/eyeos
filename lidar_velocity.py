@@ -13,7 +13,8 @@ def read_data():
             
             if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                 curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
-                ttc = curr * .01 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                if curr != prev:
+                    ttc = curr * .01 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
                 velLidar = (prev - curr) / .01
                 print("TTC:"+ str(ttc) + "sec")
                 print("velocity:"+ str(velLidar) + "cm/sec")
