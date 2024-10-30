@@ -9,9 +9,7 @@ class TFLuna:
         self.ser = serial.Serial(port, baudrate, timeout = 0)
 
     def set_baudrate(self, baudrate):
-        """
-        Set a new baudrate for the TF-Luna sensor.
-        """
+        # Set a new baudrate for the TF-Luna sensor.
         if self.ser.is_open:
             self.ser.baudrate = baudrate
             print(f"Baudrate set to {baudrate}")
