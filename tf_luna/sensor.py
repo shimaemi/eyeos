@@ -84,7 +84,7 @@ class TFLuna:
         else:
             raise ValueError("Unsupported unit. Choose from 'C', 'F', 'K'.")
         
-    def start_ttc_read():
+    def start_ttc_read(self):
         time.sleep(1)  # Sleep 1000ms
         range = 0 # 1 if object within 10 sec, 2 if within 5
         prev = 0
