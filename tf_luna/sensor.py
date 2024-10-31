@@ -9,6 +9,7 @@ class TFLuna:
         self.ser = serial.Serial(port, baudrate, timeout = 0)
         self.prev = 0
         self.sample_rate = None
+        self.period = None
 
     def set_sample(self, sample = 100):
         # Change the sample rate
@@ -35,15 +36,13 @@ class TFLuna:
         return None  # Return None if no valid response is received
     
     def get_period(self):
-        print("Calling get_sample from get_period")  # Debug print
+        if self.period is not None:
+            return self.period
         sample_rate = self.get_sample()
-        print(f"Sample rate in get_period: {sample_rate}")  # Debug print
         if sample_rate is not None:
             period = 1 / sample_rate  # Calculate the period in seconds
-            print(f"Calculated period: {period} seconds")  # Debug print
             return period
         else:
-            print("Failed to get the sample rate in get_period")  # Debug print
             return None
 
     def read_distance(self):
