@@ -9,6 +9,7 @@ class TFLuna:
         self.ser = serial.Serial(port, baudrate, timeout = 0)
         self.prev = 0
         self.sample_rate = None
+        self.period = None
 
     def set_sample(self, sample = 100):
         # Change the sample rate
