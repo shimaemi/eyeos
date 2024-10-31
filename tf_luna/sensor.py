@@ -30,7 +30,8 @@ class TFLuna:
         return None  # Return None if no valid response is received
     
     def get_period(self):
-        period = 1 / self.get_sample()
+        sample = self.get_sample()
+        period = 1 / sample
         return period
 
     def read_distance(self):
