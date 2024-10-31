@@ -6,6 +6,7 @@ def test_tf_luna():
     
     try:
         # Test setting sample rate
+        print("Setting sample rate")
         sensor.set_sample(100)
 
         # Test reading and printing distance in various units
@@ -25,6 +26,11 @@ def test_tf_luna():
         # Test reading and printing signal strength
         print("Testing print_strength...")
         sensor.print_strength()
+
+        # Test time to collide
+        print("Testing print_ttc")
+        sensor.print_ttc()
+        
 
     finally:
         sensor.close()

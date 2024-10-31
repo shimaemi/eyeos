@@ -1,8 +1,7 @@
 import serial # uart
 import time
-from tf_luna import TFLuna
+from tf_luna import TFLuna, sensor
 ser = serial.Serial('/dev/serial0', 115200)
-
 # we define a new function that will get the data from LiDAR and publish it
 def read_data():
     time.sleep(1)  # Sleep 1000ms

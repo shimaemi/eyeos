@@ -56,7 +56,7 @@ class TFLuna:
                     temperature = data[6] + data[7] * 256   # Calculates temperature
                     temperature = (temperature/8.0) - 256.0 # Temperature scaling and offset
                     return temperature
-        return None
+        return None       
     
     def convert_distance(self, distance, unit):
         # Converts distance to a specified unit
@@ -72,15 +72,6 @@ class TFLuna:
             return distance / 100.0
         else:
             raise ValueError("Unsupported unit, Choose from 'mm', 'cm', 'inch', 'ft', 'm'. ")
-        
-    def print_distance(self, unit = 'cm'):
-        # Read and print the distance in the specified unit
-        distance = self.read_distance() 
-        if distance is not None:
-            converted_distance = self.convert_distance(distance, unit)
-            print(f"Distance: {converted_distance:.2f} {unit}")
-        else:
-            print("Failed to read distance.")
 
     def convert_temperature(self, temperature, unit):
         # Convert temperature to the specified unit.
@@ -92,35 +83,40 @@ class TFLuna:
             return temperature + 273.15
         else:
             raise ValueError("Unsupported unit. Choose from 'C', 'F', 'K'.")
-
+        
     def read_ttc(self):
         time.sleep(1)  # Sleep 1000ms
-        range = 0 # 1 if object within 10 sec, 2 if within 5
         prev = 0
-        while True:
-            counter = self.ser.in_waiting # count the number of bytes of the serial port
-            if counter > 8:
-                bytes_serial = self.ser.read(9)
-                self.ser.reset_input_buffer()
+        
+        counter = self.ser.in_waiting  # Count the number of bytes in the serial port
+        if counter > 8:
+            bytes_serial = self.ser.read(9)
+            self.ser.reset_input_buffer()
+        
+            if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # Check for header bytes
+                curr = self.read_distance()  # Read current distance in centimeters
+                if curr != prev:
+                    try:
+                        ttc = curr * 1 / (prev - curr)  # Calculate TTC
+                    except ZeroDivisionError:
+                        ttc = float('inf')  # Handle division by zero
+
+                    prev = curr  # Update previous distance
+                    self.ser.reset_input_buffer()
+                    return ttc
+        return None
+
+
+
             
-                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
-                    curr = self.read_distance() # centimeters
-                    if curr != prev:
-                        ttc = curr * 1 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                    if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
-                        print("est TTC: within 5 sec")
-                        range = 2
-                    elif ttc <= 10 and ttc > 5 and range < 1:
-                        print("est TTC: within 10 sec")
-                        range = 1
-                    elif ttc > 10 and range > 0:
-                        range = 0
-                    elif ttc <= 10 and ttc > 5 and range > 1:
-                        range = 1
-                    else:
-                        print("TTC:"+ str(ttc) + "sec")
-                    prev = curr 
-                    self.ser.reset_input_buffer()    
+    def print_distance(self, unit = 'cm'):
+        # Read and print the distance in the specified unit
+        distance = self.read_distance() 
+        if distance is not None:
+            converted_distance = self.convert_distance(distance, unit)
+            print(f"Distance: {converted_distance:.2f} {unit}")
+        else:
+            print("Failed to read distance.")
 
     def print_strength(self):
         # Read and print the signal strength 
@@ -138,6 +134,20 @@ class TFLuna:
             print(f"Temperature: {converted_temperature:.2f} {unit}")
         else:
             print("Failed to read temperature.")
+
+    def print_ttc(self, ttc):
+        # Read and print the ttc
+        ttc = self.read_ttc
+        if ttc is None:
+            print("Failed to calculate TTC")
+        elif 0 < ttc <= 5:
+            print("Estimated TTC: within 5 sec")
+        elif 5 < ttc <= 10:
+            print("Estimated TTC: within 10 sec")
+        else:
+            print(f"TTC: {ttc:.2f} sec")
+
+        
 
     def close(self):
         self.ser.close()
