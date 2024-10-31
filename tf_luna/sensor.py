@@ -1,10 +1,10 @@
 # sensor.py
 import serial  # type: ignore
 import time
-sample = 5 # set sample rate 5 / sec
-t = 1 / sample # period
 
 class TFLuna:
+    sample = 5 # set sample rate 5 / sec
+    t = 1 / sample # period
     # port = serial port TF-Luna is connected to (~AMA0)
     # baudrate = communication speed default is set
     def __init__(self, port, baudrate = 115200):
