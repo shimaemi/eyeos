@@ -40,7 +40,7 @@ def test_tf_luna():
     # Test time to collide
     print("Testing ttc and velocity reads")
     while True:
-        sensor.print_ttc
+        sensor.print_ttc()
         sensor.print_velocity()     
 
 
