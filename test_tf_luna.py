@@ -41,13 +41,13 @@ def test_tf_luna():
 
     # Test time to collide
     print("Testing print_ttc")
-    while True:
-        sensor.print_ttc()
+    ttc_value = sensor.print_tts(single_run = True)
+    print(f"Single run TTC-Value: {ttc_value}")
 
     # Test velocity
     print("Testing print_velocity")
-    sensor.print_velocity() 
-    time.sleep(1)
+    velocity_value = sensor.print_velocity(single_run=True)
+    print(f"Single run velocity value: {velocity_value} cm/sec")
 
     # Test ttc and velocity
 #    print("Testing print_ttc_velocity")
