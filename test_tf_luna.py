@@ -5,9 +5,8 @@ def test_tf_luna():
     sensor = TFLuna('/dev/serial0', 115200)
 
     try:
-        # Test setting baudrate
-        print("Testing set_baudrate...")
-        sensor.set_baudrate(115200)
+        # Test setting sample rate
+        sensor.set_sample(100)
 
         # Test reading and printing distance in various units
         print("Testing print_distance...")

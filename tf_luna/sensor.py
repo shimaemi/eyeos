@@ -8,13 +8,12 @@ class TFLuna:
     def __init__(self, port, baudrate = 115200):
         self.ser = serial.Serial(port, baudrate, timeout = 0)
 
-    def set_baudrate(self, baudrate):
-        # Set a new baudrate for the TF-Luna sensor.
-        if self.ser.is_open:
-            self.ser.baudrate = baudrate
-            print(f"Baudrate set to {baudrate}")
-        else:
-            print("Serial port is not open.")
+    def set_sample(self, sample = 100):
+        # Change the sample rate
+        sample_packet = [0x5a,0x06,0x03,sample,00,00] # Sample rate byte array
+        self.ser.write(sample_packet) # Send sample rate instruction
+        time.sleep(0.1) # Wait or change to take effect
+        return  
 
     def read_distance(self):
         if not self.ser.is_open:
