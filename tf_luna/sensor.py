@@ -7,6 +7,8 @@ class TFLuna:
     # baudrate = communication speed default is set
     def __init__(self, port, baudrate = 115200):
         self.ser = serial.Serial(port, baudrate, timeout = 0)
+        self.prev = 0
+        self.sample_rate = None
 
     def set_sample(self, sample = 100):
         # Change the sample rate
