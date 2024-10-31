@@ -2,10 +2,11 @@ from tf_luna import TFLuna
 import time
 
 sensor = TFLuna('/dev/serial0', 115200)
-counter = 0
+
 
 def test_tf_luna():
-
+    counter = 0
+    
     # Test setting sample rate
     print("Setting sample rate")
     sensor.set_sample(5)
