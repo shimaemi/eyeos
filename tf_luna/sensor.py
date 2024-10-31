@@ -25,7 +25,7 @@ class TFLuna:
         # Request the current sample rate
         request_packet = [0x5a, 0x04, 0x03, 0x00, 0x00, 0x00]  # Request sample rate byte array
         self.ser.write(request_packet)  # Send request instruction
-        time.sleep(0.5)  # Wait for the response
+        time.sleep(0.1)  # Wait for the response
 
         # Read the response
         if self.ser.in_waiting > 0:
@@ -162,6 +162,7 @@ class TFLuna:
                     curr = self.read_distance() # centimeters
                     if curr != prev:
                         ttc = curr * period / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                        ttc = round(ttc, 5)
                     if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
                         print("est TTC: within 5 sec")
                         range = 2
@@ -191,6 +192,7 @@ class TFLuna:
                     curr = bytes_serial[2] + bytes_serial[3] * 256  # centimeters
                     if curr != prev:
                         velocity = (prev - curr) / period  # Calculate velocity
+                        velocity = round(velocity, 5)
                         print("velocity:" + str(velocity) + " cm/sec")
                         prev = curr
                     self.ser.reset_input_buffer()
