@@ -42,7 +42,7 @@ def test_tf_luna():
     print("Testing print_ttc")
     while counter < 5:
         sensor.print_ttc()
-        counter ++
+        counter = counter + 1
         time.sleep(1)
 
     # Test velocity
