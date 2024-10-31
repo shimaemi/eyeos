@@ -31,6 +31,11 @@ def test_tf_luna():
         print("Testing print_ttc")
         while True:
             sensor.print_ttc()
+        
+
+    finally:
+        sensor.close()
+        print("Sensor connection closed.")
 
 if __name__ == "__main__":
     try:
