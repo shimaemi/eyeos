@@ -48,9 +48,9 @@ def test_tf_luna():
     sensor.print_velocity() 
 
     # Test ttc and velocity
-    print("Testing print_ttc_velocity")
-    while True:
-        sensor.print_ttc_velocity()
+#    print("Testing print_ttc_velocity")
+#    while True:
+#        sensor.print_ttc_velocity()
 
 
        
