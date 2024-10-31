@@ -3,7 +3,7 @@ import time
 
 def test_tf_luna():
     sensor = TFLuna('/dev/serial0', 115200)
-
+    
     try:
         # Test setting sample rate
         sensor.set_sample(100)
@@ -31,4 +31,8 @@ def test_tf_luna():
         print("Sensor connection closed.")
 
 if __name__ == "__main__":
-    test_tf_luna()
+    try:
+        test_tf_luna()
+    except KeyboardInterrupt:
+        sensor.close()
+        print("program interrupted by the user")

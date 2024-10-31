@@ -2,6 +2,7 @@ import serial # uart
 import time
 from tf_luna import TFLuna
 ser = serial.Serial('/dev/serial0', 115200)
+
 # we define a new function that will get the data from LiDAR and publish it
 def read_data():
     time.sleep(1)  # Sleep 1000ms
@@ -14,7 +15,7 @@ def read_data():
             ser.reset_input_buffer()
             
             if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
-                curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
+                curr = sensor.read_distance() # centimeters
                 if curr != prev:
                     ttc = curr * 1 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
                 if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
@@ -32,18 +33,13 @@ def read_data():
                 prev = curr 
                 ser.reset_input_buffer()
 
-def set_samp_rate(samp_rate=100):
-    ##########################
-    # change the sample rate
-    samp_rate_packet = [0x5a,0x06,0x03,samp_rate,00,00] # sample rate byte array
-    ser.write(samp_rate_packet) # send sample rate instruction
-    return
+
                 
 if __name__ == "__main__":
     try:
         if ser.isOpen() == False:
             ser.open()
-        set_samp_rate(5) # set sample rate once / sec
+        sensor.set_sample(5) # set sample rate once / sec
         read_data()
     except KeyboardInterrupt:
         if ser != None:
