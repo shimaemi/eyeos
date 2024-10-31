@@ -156,12 +156,12 @@ class TFLuna:
             if counter > 8:
                 bytes_serial = self.ser.read(9)
                 self.ser.reset_input_buffer()
-            
+
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                     curr = self.read_distance() # centimeters
                     if curr != prev:
+                        ttc = curr * t / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
                         ttc = curr * period / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                        ttc = round(ttc, 5)
                     if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
                         print("est TTC: within 5 sec")
                         range = 2
