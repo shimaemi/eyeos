@@ -5,8 +5,7 @@ sensor = TFLuna('/dev/serial0', 115200)
 
 
 def test_tf_luna():
-    counter = 0
-    
+
     # Test setting sample rate
     print("Setting sample rate")
     sensor.set_sample(5)
@@ -41,9 +40,10 @@ def test_tf_luna():
 
     # Test time to collide
     print("Testing print_ttc")
+    counter = 0
     while counter < 5:
         sensor.print_ttc()
-        counter = counter + 1
+        counter += 1
         time.sleep(1)
 
     # Test velocity
@@ -51,7 +51,7 @@ def test_tf_luna():
     counter = 0
     while counter < 5:
         sensor.print_velocity() 
-        counter = counter + 1
+        counter += 1
         time.sleep(1)
 
     # Test ttc and velocity
@@ -59,7 +59,7 @@ def test_tf_luna():
     counter = 0
     while counter < 5:
         sensor.print_ttc_velocity()
-        counter = counter + 1
+        counter += 1
         time.sleep(1)
 
     sensor.close() 
