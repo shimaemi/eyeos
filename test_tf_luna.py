@@ -37,32 +37,22 @@ def test_tf_luna():
     # Test reading and printing signal strength
     print("Testing print_strength...")
     sensor.print_strength()
+ 
 
     # Test time to collide
     print("Testing print_ttc")
-    counter = 0
-    while counter < 5:
-        sensor.print_ttc()
-        counter += 1
-        time.sleep(1)
+    sensor.print_ttc
 
     # Test velocity
     print("Testing print_velocity")
-    counter = 0
-    while counter < 5:
-        sensor.print_velocity() 
-        counter += 1
-        time.sleep(1)
+    sensor.print_velocity() 
 
     # Test ttc and velocity
     print("Testing print_ttc_velocity")
-    counter = 0
-    while counter < 5:
+    while True:
         sensor.print_ttc_velocity()
-        counter += 1
-        time.sleep(1)
 
-    sensor.close() 
+
        
 
 
