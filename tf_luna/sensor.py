@@ -16,6 +16,9 @@ class TFLuna:
         return 
     
     def get_sample(self):
+        if self.sample_rate is not None:
+            return self.sample_rate # Return cached sample rate if available
+        
         # Request the current sample rate
         request_packet = [0x5a, 0x04, 0x03, 0x00, 0x00, 0x00]  # Request sample rate byte array
         self.ser.write(request_packet)  # Send request instruction
