@@ -1,6 +1,8 @@
 # sensor.py
 import serial  # type: ignore
 import time
+sample = 5 # set sample rate 5 / sec
+t = 1 / sample # period
 
 class TFLuna:
     # port = serial port TF-Luna is connected to (~AMA0)
@@ -96,8 +98,8 @@ class TFLuna:
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                     curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
                     if curr != prev:
-                        ttc = curr * 1 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                    velLidar = (prev - curr) / .01
+                        ttc = curr * t / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                    velLidar = (prev - curr) / t
                     print("TTC:"+ str(ttc) + "sec")
                     print("velocity:"+ str(velLidar) + "cm/sec")
                     prev = curr 
@@ -142,7 +144,7 @@ class TFLuna:
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                     curr = self.read_distance() # centimeters
                     if curr != prev:
-                        ttc = curr * 1 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                        ttc = curr * t / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
                     if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
                         print("est TTC: within 5 sec")
                         range = 2
@@ -170,7 +172,7 @@ class TFLuna:
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
                     curr = bytes_serial[2] + bytes_serial[3] * 256  # centimeters
                     if curr != prev:
-                        velocity = (prev - curr) / .01  # Calculate velocity
+                        velocity = (prev - curr) / t  # Calculate velocity
                         print("velocity:" + str(velocity) + " cm/sec")
                         prev = curr
                     self.ser.reset_input_buffer()
