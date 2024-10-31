@@ -31,8 +31,12 @@ class TFLuna:
     
     def get_period(self):
         sample = self.get_sample()
-        period = 1 / sample
-        return period
+        if sample is not None:
+            period = 1 / sample
+            return period
+        else:
+            print("Failed to get sample rate")
+            return None
 
     def read_distance(self):
         if not self.ser.is_open:
