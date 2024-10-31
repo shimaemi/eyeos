@@ -84,9 +84,8 @@ class TFLuna:
         else:
             raise ValueError("Unsupported unit. Choose from 'C', 'F', 'K'.")
         
-    def start_ttc_read(self):
+    def start_velocity_read(self):
         time.sleep(1)  # Sleep 1000ms
-        range = 0 # 1 if object within 10 sec, 2 if within 5
         prev = 0
         while True:
             counter = self.ser.in_waiting # count the number of bytes of the serial port
@@ -95,23 +94,14 @@ class TFLuna:
                 self.ser.reset_input_buffer()
             
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
-                    curr = self.read_distance() # centimeters
+                    curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
                     if curr != prev:
                         ttc = curr * 1 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                    if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
-                        print("est TTC: within 5 sec")
-                        range = 2
-                    elif ttc <= 10 and ttc > 5 and range < 1:
-                        print("est TTC: within 10 sec")
-                        range = 1
-                    elif ttc > 10 and range > 0:
-                        range = 0
-                    elif ttc <= 10 and ttc > 5 and range > 1:
-                        range = 1
-                    else:
-                        print("TTC:"+ str(ttc) + "sec")
+                    velLidar = (prev - curr) / .01
+                    print("TTC:"+ str(ttc) + "sec")
+                    print("velocity:"+ str(velLidar) + "cm/sec")
                     prev = curr 
-                    self.ser.reset_input_buffer()    
+                    ser.reset_input_buffer()   
  
     def print_distance(self, unit = 'cm'):
         # Read and print the distance in the specified unit
@@ -138,6 +128,52 @@ class TFLuna:
             print(f"Temperature: {converted_temperature:.2f} {unit}")
         else:
             print("Failed to read temperature.")
+
+    def print_ttc(self):
+        time.sleep(1)  # Sleep 1000ms
+        range = 0 # 1 if object within 10 sec, 2 if within 5
+        prev = 0
+        while True:
+            counter = self.ser.in_waiting # count the number of bytes of the serial port
+            if counter > 8:
+                bytes_serial = self.ser.read(9)
+                self.ser.reset_input_buffer()
+            
+                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
+                    curr = self.read_distance() # centimeters
+                    if curr != prev:
+                        ttc = curr * 1 / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                    if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
+                        print("est TTC: within 5 sec")
+                        range = 2
+                    elif ttc <= 10 and ttc > 5 and range < 1:
+                        print("est TTC: within 10 sec")
+                        range = 1
+                    elif ttc > 10 and range > 0:
+                        range = 0
+                    elif ttc <= 10 and ttc > 5 and range > 1:
+                        range = 1
+                    else:
+                        print("TTC:"+ str(ttc) + "sec")
+                    prev = curr 
+                    self.ser.reset_input_buffer()
+
+    def print_velocity(self):
+        time.sleep(1)  # Sleep 1000ms
+        prev = 0
+        while True:
+            counter = self.ser.in_waiting  # count the number of bytes of the serial port
+            if counter > 8:
+                bytes_serial = self.ser.read(9)
+                self.ser.reset_input_buffer()
+        
+                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
+                    curr = bytes_serial[2] + bytes_serial[3] * 256  # centimeters
+                    if curr != prev:
+                        velocity = (prev - curr) / .01  # Calculate velocity
+                        print("velocity:" + str(velocity) + " cm/sec")
+                        prev = curr
+                    self.ser.reset_input_buffer()
 
     def close(self):
         self.ser.close()

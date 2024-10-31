@@ -27,8 +27,12 @@ def test_tf_luna():
     sensor.print_strength()
 
     # Test time to collide
-    print("Testing start_ttc_read")
-    sensor.start_ttc_read()
+    print("Testing ttc and velocity reads")
+    while True:
+        sensor.print_ttc()
+        sensor.print_velocity()     
+
+
 
 if __name__ == "__main__":
     try:
