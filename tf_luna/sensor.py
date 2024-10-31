@@ -135,7 +135,7 @@ class TFLuna:
         else:
             print("Failed to read temperature.")
 
-    def print_ttc(self, ttc):
+    def print_ttc(self):
         # Read and print the ttc
         ttc = self.read_ttc
         if ttc is None:
