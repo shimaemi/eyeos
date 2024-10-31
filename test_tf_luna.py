@@ -16,6 +16,7 @@ def test_tf_luna():
     # Test get period
     print("Checking period")
     period = sensor.get_period()
+    print("Sample rate = " + str(sample) + "hz")
     print("Period = " + str(period) + "s")
 
     # Test reading and printing distance in various units
