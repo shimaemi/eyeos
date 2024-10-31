@@ -30,14 +30,17 @@ class TFLuna:
         return None  # Return None if no valid response is received
     
     def get_period(self):
-        sample = self.get_sample()
-        print(sample)
-        if sample is not None:
-            period = 1 / sample
+        if self.sample_rate is None:
+            self.sample_rate = self.get_sample()
+        print(f"Sample rate in get_period: {self.sample_rate}")  # Debug print
+        if self.sample_rate is not None:
+            period = 1 / self.sample_rate  # Calculate the period in seconds
+            print(f"Calculated period: {period} seconds")  # Debug print
             return period
         else:
-            print("Failed to get sample rate")
+            print("Failed to get the sample rate in get_period")  # Debug print
             return None
+
 
     def read_distance(self):
         if not self.ser.is_open:
