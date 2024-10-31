@@ -37,7 +37,6 @@ class TFLuna:
         print("Failed to receive a valid sample rate")  # Debug print
         return None  # Return None if no valid response is received
 
-    
     def get_period(self):
         if self.period is not None:
             return self.period  # Return cached period if available
@@ -196,6 +195,28 @@ class TFLuna:
                         print("velocity:" + str(velocity) + " cm/sec")
                         prev = curr
                     self.ser.reset_input_buffer()
+
+    def print_ttc_velocity(self):
+        period = self.get_period()
+        time.sleep(1)  # Sleep 1000ms
+        prev = 0
+        while True:
+            counter = self.ser.in_waiting  # count the number of bytes of the serial port
+            if counter > 8:
+                bytes_serial = self.ser.read(9)
+                self.ser.reset_input_buffer()
+        
+                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
+                    curr = bytes_serial[2] + bytes_serial[3] * 256  # centimeters
+                    if curr != prev:
+                        ttc = curr * period / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                        ttc = round(ttc, 5)
+                        velocity = (prev - curr) / period  # Calculate velocity
+                        velocity = round(velocity, 5)
+                        print("TTC:"+ str(ttc) + "sec")
+                        print("velocity:" + str(velocity) + " cm/sec")
+                        prev = curr
+                    self.ser.reset_input_buffer()                    
 
     def close(self):
         self.ser.close()
