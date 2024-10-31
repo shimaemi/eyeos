@@ -137,7 +137,7 @@ class TFLuna:
 
     def print_ttc(self):
         # Read and print the ttc
-        ttc = self.read_ttc
+        ttc = self.read_ttc()
         if ttc is None:
             print("Failed to calculate TTC")
         elif 0 < ttc <= 5:
