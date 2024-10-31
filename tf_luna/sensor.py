@@ -84,26 +84,7 @@ class TFLuna:
         elif unit == 'K':
             return temperature + 273.15
         else:
-            raise ValueError("Unsupported unit. Choose from 'C', 'F', 'K'.")
-        
-    def start_velocity_read(self):
-        time.sleep(1)  # Sleep 1000ms
-        prev = 0
-        while True:
-            counter = self.ser.in_waiting # count the number of bytes of the serial port
-            if counter > 8:
-                bytes_serial = self.ser.read(9)
-                self.ser.reset_input_buffer()
-            
-                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
-                    curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
-                    if curr != prev:
-                        ttc = curr * t / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                    velLidar = (prev - curr) / t
-                    print("TTC:"+ str(ttc) + "sec")
-                    print("velocity:"+ str(velLidar) + "cm/sec")
-                    prev = curr 
-                    ser.reset_input_buffer()   
+            raise ValueError("Unsupported unit. Choose from 'C', 'F', 'K'.") 
  
     def print_distance(self, unit = 'cm'):
         # Read and print the distance in the specified unit
