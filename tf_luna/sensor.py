@@ -153,30 +153,40 @@ class TFLuna:
         prev = 0
 
         counter = self.ser.in_waiting  # count the number of bytes of the serial port
+        print(f"Counter: {counter}")  # Debugging statement
         if counter > 8:
             bytes_serial = self.ser.read(9)
             self.ser.reset_input_buffer()
+            print(f"bytes_serial: {bytes_serial}")  # Debugging statement
 
             if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
                 curr = self.read_distance()  # centimeters
+                print(f"Current distance: {curr}, Previous distance: {prev}")  # Debugging statement
                 if curr != prev:
-                    ttc = curr * period / (prev - curr)  # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                    ttc = round(ttc, 5)
-                if ttc <= 5 and ttc > 0 and range < 2:  # send an alert every time we enter the danger zone
-                    print("est TTC: within 5 sec")
-                    range = 2
-                elif ttc <= 10 and ttc > 5 and range < 1:
-                    print("est TTC: within 10 sec")
-                    range = 1
-                elif ttc > 10 and range > 0:
-                    range = 0
-                elif ttc <= 10 and ttc > 5 and range > 1:
-                    range = 1
-                else:
-                    print("TTC:" + str(ttc) + "sec")
-                prev = curr
-                self.ser.reset_input_buffer()
+                    try:
+                        ttc = curr * period / (prev - curr)  # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                        ttc = round(ttc, 5)
+                        print(f"Calculated TTC: {ttc}")  # Debugging statement
+                    except ZeroDivisionError:
+                        print("Division by zero error in TTC calculation")
+                        ttc = float('inf')  # Handle division by zero
+
+                    if ttc <= 5 and ttc > 0 and range < 2:  # send an alert every time we enter the danger zone
+                        print("est TTC: within 5 sec")
+                        range = 2
+                    elif ttc <= 10 and ttc > 5 and range < 1:
+                        print("est TTC: within 10 sec")
+                        range = 1
+                    elif ttc > 10 and range > 0:
+                        range = 0
+                    elif ttc <= 10 and ttc > 5 and range > 1:
+                        range = 1
+                    else:
+                        print("TTC:" + str(ttc) + "sec")
+                    prev = curr
+                    self.ser.reset_input_buffer()
         return ttc
+
 
 
     def print_velocity(self):
