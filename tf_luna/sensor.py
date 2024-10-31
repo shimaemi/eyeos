@@ -92,7 +92,7 @@ class TFLuna:
             counter = self.ser.in_waiting # count the number of bytes of the serial port
             if counter > 8:
                 bytes_serial = self.ser.read(9)
-                self.reset_input_buffer()
+                self.ser.reset_input_buffer()
             
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                     curr = self.read_distance() # centimeters
