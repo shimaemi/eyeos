@@ -182,8 +182,6 @@ class TFLuna:
             if single_run:
                 break
 
-
-
     def print_velocity(self, single_run=False):
         period = self.get_period()
         time.sleep(1)  # Sleep 1000ms
