@@ -1,4 +1,4 @@
-from tf_luna import TFLuna
+from tf_luna import TFLuna, sensor
 import time
 
 def test_tf_luna():
