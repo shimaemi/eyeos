@@ -31,6 +31,7 @@ class TFLuna:
     
     def get_period(self):
         sample = self.get_sample()
+        print(sample)
         if sample is not None:
             period = 1 / sample
             return period
