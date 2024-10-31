@@ -8,6 +8,14 @@ def test_tf_luna():
     print("Setting sample rate")
     sensor.set_sample(50)
 
+    # Test get sample rate
+    print("Checking sample rate")
+    print("Sample rate = " + sensor.get_sample + "hz")
+
+    # Test get period
+    print("Checking period")
+    print("Period = " + sensor.get_period + "s")
+
     # Test reading and printing distance in various units
     print("Testing print_distance...")
     sensor.print_distance('cm')

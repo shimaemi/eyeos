@@ -3,8 +3,6 @@ import serial  # type: ignore
 import time
 
 class TFLuna:
-    sample = 5 # set sample rate 5 / sec
-    t = 1 / sample # period
     # port = serial port TF-Luna is connected to (~AMA0)
     # baudrate = communication speed default is set
     def __init__(self, port, baudrate = 115200):
@@ -15,7 +13,25 @@ class TFLuna:
         sample_packet = [0x5a,0x06,0x03,sample,00,00] # Sample rate byte array
         self.ser.write(sample_packet) # Send sample rate instruction
         time.sleep(0.1) # Wait or change to take effect
-        return  
+        return 
+    
+    def get_sample(self):
+        # Request the current sample rate
+        request_packet = [0x5a, 0x04, 0x03, 0x00, 0x00, 0x00]  # Request sample rate byte array
+        self.ser.write(request_packet)  # Send request instruction
+        time.sleep(0.1)  # Wait for the response
+
+        # Read the response
+        if self.ser.in_waiting > 0:
+            response = self.ser.read(6)  # Read the response packet
+            if response[0] == 0x5a and response[1] == 0x06 and response[2] == 0x03:
+                sample_rate = response[3]  # Extract the sample rate from the response
+                return sample_rate
+        return None  # Return None if no valid response is received
+    
+    def get_period(self):
+        period = 1 / self.get_sample()
+        return period
 
     def read_distance(self):
         if not self.ser.is_open:
@@ -113,6 +129,7 @@ class TFLuna:
             print("Failed to read temperature.")
 
     def print_ttc(self):
+        period = self.get_period
         time.sleep(1)  # Sleep 1000ms
         range = 0 # 1 if object within 10 sec, 2 if within 5
         prev = 0
@@ -125,7 +142,7 @@ class TFLuna:
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                     curr = self.read_distance() # centimeters
                     if curr != prev:
-                        ttc = curr * t / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                        ttc = curr * period / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
                     if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
                         print("est TTC: within 5 sec")
                         range = 2
@@ -142,6 +159,7 @@ class TFLuna:
                     self.ser.reset_input_buffer()
 
     def print_velocity(self):
+        period = self.get_period
         time.sleep(1)  # Sleep 1000ms
         prev = 0
         while True:
@@ -153,7 +171,7 @@ class TFLuna:
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
                     curr = bytes_serial[2] + bytes_serial[3] * 256  # centimeters
                     if curr != prev:
-                        velocity = (prev - curr) / t  # Calculate velocity
+                        velocity = (prev - curr) / period  # Calculate velocity
                         print("velocity:" + str(velocity) + " cm/sec")
                         prev = curr
                     self.ser.reset_input_buffer()
