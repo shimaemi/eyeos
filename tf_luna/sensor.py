@@ -30,7 +30,6 @@ class TFLuna:
         return None  # Return None if no valid response is received
     
     def get_period(self):
-        time.sleep(0.1)
         sample = self.get_sample()
         if sample is not None:
             period = 1 / sample

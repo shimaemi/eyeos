@@ -9,9 +9,9 @@ def test_tf_luna():
     sensor.set_sample(50)
 
     # Test get sample rate
-    print("Checking sample rate")
-    sample = sensor.get_sample()
-    print("Sample rate = " + str(sample) + "hz")
+    #print("Checking sample rate")
+    #sample = sensor.get_sample()
+    #print("Sample rate = " + str(sample) + "hz")
 
     # Test get period
     print("Checking period")
