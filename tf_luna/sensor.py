@@ -18,7 +18,6 @@ class TFLuna:
     def get_sample(self):
         # Request the current sample rate
         request_packet = [0x5a, 0x04, 0x03, 0x00, 0x00, 0x00]  # Request sample rate byte array
-        self.ser.reset_input_buffer() # Clear the input buffer
         self.ser.write(request_packet)  # Send request instruction
         time.sleep(0.1)  # Wait for the response
 
