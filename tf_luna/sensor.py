@@ -19,8 +19,8 @@ class TFLuna:
     
     def get_sample(self):
         if self.sample_rate is not None:
-            return self.sample_rate # Return cached sample rate if available
-        
+             return self.sample_rate  # Return cached sample rate if available
+    
         # Request the current sample rate
         request_packet = [0x5a, 0x04, 0x03, 0x00, 0x00, 0x00]  # Request sample rate byte array
         self.ser.write(request_packet)  # Send request instruction
@@ -30,17 +30,26 @@ class TFLuna:
         if self.ser.in_waiting > 0:
             response = self.ser.read(6)  # Read the response packet
             if response[0] == 0x5a and response[1] == 0x06 and response[2] == 0x03:
-                sample_rate = response[3]  # Extract the sample rate from the response
-                return sample_rate
+                self.sample_rate = response[3]  # Extract the sample rate from the response
+                print(f"Sample rate received: {self.sample_rate}")  # Debug print
+                return self.sample_rate
+        print("Failed to receive a valid sample rate")  # Debug print
         return None  # Return None if no valid response is received
+
     
     def get_period(self):
+        if self.period is not None:
+            return self.period  # Return cached period if available
+    
         sample_rate = self.get_sample()
         if sample_rate is not None:
-            period = 1 / sample_rate  # Calculate the period in seconds
-            return period
+            self.period = 1 / sample_rate  # Calculate and cache the period in seconds
+            print(f"Calculated period: {self.period} seconds")  # Debug print
+            return self.period
         else:
+            print("Failed to get the sample rate in get_period")  # Debug print
             return None
+
 
     def read_distance(self):
         if not self.ser.is_open:
