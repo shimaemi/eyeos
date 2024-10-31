@@ -1,4 +1,4 @@
-from tf_luna import TFLuna, sensor
+from tf_luna import TFLuna
 import time
 
 def test_tf_luna():
@@ -6,7 +6,7 @@ def test_tf_luna():
 
     # Test setting sample rate
     print("Setting sample rate")
-    sensor.set_sample(50)
+    sensor.set_sample(5)
 
     # Test get sample rate
     print("Checking sample rate")
