@@ -19,7 +19,7 @@ class TFLuna:
         # Request the current sample rate
         request_packet = [0x5a, 0x04, 0x03, 0x00, 0x00, 0x00]  # Request sample rate byte array
         self.ser.write(request_packet)  # Send request instruction
-        time.sleep(0.1)  # Wait for the response
+        time.sleep(0.5)  # Wait for the response
 
         # Read the response
         if self.ser.in_waiting > 0:
