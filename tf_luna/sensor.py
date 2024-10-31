@@ -146,7 +146,7 @@ class TFLuna:
         else:
             print("Failed to read temperature.")
 
-    def start_ttc_read(self):
+    def print_ttc(self):
         period = self.get_period()
         time.sleep(1)  # Sleep 1000ms
         range = 0  # 1 if object within 10 sec, 2 if within 5
