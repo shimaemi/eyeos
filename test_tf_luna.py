@@ -6,7 +6,7 @@ def test_tf_luna():
 
     # Test setting sample rate
     print("Setting sample rate")
-    sensor.set_sample(10)
+    sensor.set_sample(50)
 
     # Test reading and printing distance in various units
     print("Testing print_distance...")
