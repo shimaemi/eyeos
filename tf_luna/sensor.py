@@ -149,34 +149,34 @@ class TFLuna:
     def print_ttc(self):
         period = self.get_period()
         time.sleep(1)  # Sleep 1000ms
-        range = 0 # 1 if object within 10 sec, 2 if within 5
+        range = 0  # 1 if object within 10 sec, 2 if within 5
         prev = 0
-        while True:
-            counter = self.ser.in_waiting # count the number of bytes of the serial port
-            if counter > 8:
-                bytes_serial = self.ser.read(9)
+
+        counter = self.ser.in_waiting  # count the number of bytes of the serial port
+        if counter > 8:
+            bytes_serial = self.ser.read(9)
+            self.ser.reset_input_buffer()
+
+            if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
+                curr = self.read_distance()  # centimeters
+                if curr != prev:
+                    ttc = curr * period / (prev - curr)  # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                    ttc = round(ttc, 5)
+                if ttc <= 5 and ttc > 0 and range < 2:  # send an alert every time we enter the danger zone
+                    print("est TTC: within 5 sec")
+                    range = 2
+                elif ttc <= 10 and ttc > 5 and range < 1:
+                    print("est TTC: within 10 sec")
+                    range = 1
+                elif ttc > 10 and range > 0:
+                    range = 0
+                elif ttc <= 10 and ttc > 5 and range > 1:
+                    range = 1
+                else:
+                    print("TTC:" + str(ttc) + "sec")
+                prev = curr
                 self.ser.reset_input_buffer()
-
-                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
-                    curr = self.read_distance() # centimeters
-                    if curr != prev:
-                        ttc = curr * t / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                        ttc = curr * period / (prev - curr) # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
-                    if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
-                        print("est TTC: within 5 sec")
-                        range = 2
-                    elif ttc <= 10 and ttc > 5 and range < 1:
-                        print("est TTC: within 10 sec")
-                        range = 1
-                    elif ttc > 10 and range > 0:
-                        range = 0
-                    elif ttc <= 10 and ttc > 5 and range > 1:
-                        range = 1
-                    else:
-                        print("TTC:"+ str(ttc) + "sec")
-                    prev = curr 
-                    self.ser.reset_input_buffer()
-
+        return ttc
 
 
     def print_velocity(self):
