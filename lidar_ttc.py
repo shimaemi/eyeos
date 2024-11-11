@@ -24,20 +24,12 @@ def read_lidar():
     if curr != prev:
         lid_ttc = curr * t / (prev - curr)
     return lid_ttc
-
-def set_lid_samp(self, lid_rate=5):
-    ##########################
-    # change the sample rate
-    samp_rate_packet = [0x5a,0x06,0x03,lid_rate,00,00] # sample rate byte array
-    ser.write(samp_rate_packet) # send sample rate instruction
-    return
                 
 if __name__ == "__main__":
     try:
         if ser.isOpen() == False:
             ser.open()
-        set_lid_samp(lid_samp) 
-        time.sleep(1)  # Sleep 1000ms
+        set_lid_samp(lid_samp)
         range = 0 # 1 if object within 10 sec, 2 if within 5
         while(1)
             lid_ttc = read_lidar()

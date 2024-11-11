@@ -1,3 +1,4 @@
+# test to display image bounding boxes
 import cv2
 import numpy as np
 import time
@@ -5,108 +6,94 @@ from picamera import PiCamera
 from picamera.array import PiRGBArray
 from tf_luna import TFLuna
 
-# Initialize camera 30 fps
-frames = 30
+# Load YOLO model
+net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
+classes = []
+# Load class names from coco file
+with open("coco.names", "r") as f:
+    classes = f.read().strip().split("\n")
 
-# detects objects in an image using the YOLO library and a set of pre-trained objects from the COCO database;
-# a set of 80 classes is listed in "coco.names" and pre-trained weights are stored in "yolov3.weights"
-def detect_objects(img, bBoxes, conf_threshold, nms_threshold, base_path, classes_file, model_configuration, model_weights, b_vis):
-    # load class names from file
-    classes = []
-    with open(classes_file, 'r') as ifs:
-        classes = [line.strip() for line in ifs.readlines()]
-    
-    # load neural network
-    net = cv2.dnn.readNetFromDarknet(model_configuration, model_weights)
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
-    
-    # generate 4D blob from input image
-    blob = cv2.dnn.blobFromImage(img, 1/255.0, (416, 416), (0, 0, 0), False, False)
-    
-    # Get names of output layers
-    out_layers = net.getUnconnectedOutLayers()  # get indices of output layers
-    layers_names = net.getLayerNames()  # get names of all layers in the network
-    
-    names = [layers_names[i - 1] for i in out_layers]
-    
-    # invoke forward propagation through network
+#30 fps
+frames = 30
+IMAGE_WIDTH = 320
+IMAGE_HEIGHT = 240
+
+#draws a bounding box around each object
+def detect_objects(frame):
+    # Preprocess the frame for YOLO
+    blob = cv2.dnn.blobFromImage(frame, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
     net.setInput(blob)
-    net_output = net.forward(names)
-    
-    # Scan through all bounding boxes and keep only the ones with high confidence
-    class_ids, confidences, boxes = [], [], []
-    for output in net_output:
-        for detection in output:
+    outs = net.forward(net.getUnconnectedOutLayersNames())
+
+    # Process YOLO output
+    for out in outs:
+        for detection in out:
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
-            
-            if confidence > conf_threshold:
-                box = detection[0:4] * np.array([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
-                (cx, cy, width, height) = box.astype("int")
-                x = int(cx - (width / 2))  # left
-                y = int(cy - (height / 2))  # top
-                
-                boxes.append((x, y, width, height))
-                class_ids.append(class_id)
-                confidences.append(float(confidence))
-    
-    # perform non-maxima suppression
-    indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
-    for i in indices:
-        i = i[0]
-        bBox = BoundingBox()
-        bBox.roi = boxes[i]
-        bBox.classID = class_ids[i]
-        bBox.confidence = confidences[i]
-        bBox.boxID = len(bBoxes)  # zero-based unique identifier for this bounding box
-        
-        bBoxes.append(bBox)
 
-    # show results
-    if bVis:
-        visImg = img.copy()
-        for bbox in bBoxes:
-            # Draw rectangle displaying the bounding box
-            top = bbox.roi.y
-            left = bbox.roi.x
-            width = bbox.roi.width
-            height = bbox.roi.height
-            cv2.rectangle(visImg, (left, top), (left + width, top + height), (0, 255, 0), 2)
+            if confidence > 0.5:
+                # Extract detection details
+                center_x = int(detection[0] * frame.shape[1])
+                center_y = int(detection[1] * frame.shape[0])
+                width = int(detection[2] * frame.shape[1])
+                height = int(detection[3] * frame.shape[0])
 
-            label = f"{classes[bbox.classID]}:{bbox.confidence:.2f}:{bbox.boxID}"
+                x = int(center_x - width / 2)
+                y = int(center_y - height / 2)
 
-            # Display label at the top of the bounding box
-            (label_width, label_height), baseline = cv2.getTextSize(label, cv2.FONT_ITALIC, 0.5, 1)
-            top = max(top, label_height)
-            cv2.rectangle(visImg, (left, top - round(1.5 * label_height)), (left + round(1.5 * label_width), top + baseline), (255, 255, 255), cv2.FILLED)
-            cv2.putText(visImg, label, (left, top), cv2.FONT_ITALIC, 0.75, (0, 0, 0), 1)
-
-        windowName = "Object classification"
-        cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
-        cv2.imshow(windowName, visImg)
-
-        cv2.waitKey(0)  # wait for key to be pressed
+                # Draw a box and label on the frame
+                cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
+                label = f"{classes[class_id]}: {confidence:.2f}"
+                cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    return frame
 
 if __name__ == "__main__":
     try:
-        cam_init(frames)
-        while(1)
-            # record start time
-            start_time = time.time()
+        print("q to quit")
+        camera = PiCamera()
+        camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
+        camera.framerate = frames
+        # create video capture
+        rawCapture = PiRGBArray(camera, size=(IMAGE_WIDTH, IMAGE_HEIGHT))
 
-            camera.capture('img1.jpg')
-            detect_objects(img1.jpg, bBoxes, conf_threshold, nms_threshold, base_path, classes_file, model_configuration, model_weights, b_vis)
+        time.sleep(1)
+        fps = 0
+        # record start time
+        start_time = time.time()
+
+        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+            image = frame.array
+            img_ob = detectObjects(image)
+            # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
+            cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
+            key = cv2.waitKey(1) & 0xFF
+            # clear the stream in preparation for the next frame
+            rawCapture.truncate(0)
+            # if the `q` key was pressed, break from the loop
+            if key == ord("q"):
+                break
 
             # record end time
             end_time = time.time()
             # calculate FPS
             seconds = end_time - start_time
             fps = 1.0 / seconds
-            print("Estimated fps:{0:0.1f}".format(fps))
+            start_time = end_time
+
+        camera.close()
+        cv2.destroyAllWindows()
+        print("program interrupted by the user")
 
     except KeyboardInterrupt:
         camera.close()
         cv2.destroyAllWindows()
         print("program interrupted by the user")
+
+
+
+
+
+
+# download config files from
+# https://github.com/yashrajmani/OpenCV_Yolo3_Object_Detection-from-Video/tree/main
