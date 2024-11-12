@@ -18,8 +18,8 @@ def keypoints(image):
     
     # Detect key points and compute descriptors
     keypoints, descriptors = orb.detectAndCompute(img, None)
-    for x in keypoints:
-        print("({:.2f},{:.2f}) = size {:.2f} angle {:.2f}".format(x.pt[0], x.pt[1], x.size, x.angle))
+    # for x in keypoints:
+        # print("({:.2f},{:.2f}) = size {:.2f} angle {:.2f}".format(x.pt[0], x.pt[1], x.size, x.angle))
     
     img_kp = cv2.drawKeypoints(img, keypoints, None,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
     return img_kp
