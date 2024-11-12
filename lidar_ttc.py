@@ -3,7 +3,7 @@ import time
 from tf_luna import TFLuna
 ser = serial.Serial('/dev/serial0', 115200)
 
-lid_samp = 5 # set sample rate 5 / sec
+lid_samp = 10 # set sample rate 
 t = 1 / lid_samp # period
 
 def read_lidar():

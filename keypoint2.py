@@ -2,12 +2,11 @@
 import cv2
 import numpy as np
 import time
-from picamera import PiCamera
-from picamera.array import PiRGBArray
+from picamera2 import PiCamera2
 from tf_luna import TFLuna
 
-#30 fps
-frames = 30
+# 30 fps by default
+# frames = 30
 IMAGE_WIDTH = 320
 IMAGE_HEIGHT = 240
 
@@ -27,9 +26,9 @@ def keypoints(image):
 if __name__ == "__main__":
     try:
         print("q to quit")
-        camera = cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT)
-        # create video capture
-        rawCapture = PiRGBArray(camera, size=(IMAGE_WIDTH, IMAGE_HEIGHT))
+        camera = Picamera2()
+        camera.configure(camera.create_preview_configuration(main={"format": 'XRGB8888', "size": (IMAGE_WIDTH, IMAGE_HEIGHT)}))
+        camera.start()
 
         # Initialize ORB detector
         orb = cv2.ORB_create(20)
@@ -39,13 +38,12 @@ if __name__ == "__main__":
         # record start time
         start_time = time.time()
 
-        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-            image = frame.array
+        while(1)
+            image = camera.capture_array()
             img_kp = keypoints(image)
             cv2.imshow('Keypoints', visualize_fps(img_kp, fps))
             key = cv2.waitKey(1) & 0xFF
-            # clear the stream in preparation for the next frame
-            rawCapture.truncate(0)
+
             # if the `q` key was pressed, break from the loop
             if key == ord("q"):
                 break
@@ -64,3 +62,9 @@ if __name__ == "__main__":
         camera.close()
         cv2.destroyAllWindows()
         print("program interrupted by the user")
+
+
+
+
+
+# in case the first one doesnt work

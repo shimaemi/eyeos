@@ -51,9 +51,7 @@ def detect_objects(frame):
 if __name__ == "__main__":
     try:
         print("q to quit")
-        camera = PiCamera()
-        camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
-        camera.framerate = frames
+        camera = cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT)
         # create video capture
         rawCapture = PiRGBArray(camera, size=(IMAGE_WIDTH, IMAGE_HEIGHT))
 
@@ -81,15 +79,13 @@ if __name__ == "__main__":
             fps = 1.0 / seconds
             start_time = end_time
 
-        camera.close()
-        cv2.destroyAllWindows()
-        print("program interrupted by the user")
-
     except KeyboardInterrupt:
         camera.close()
         cv2.destroyAllWindows()
+    finally:
+        camera.close()
+        cv2.destroyAllWindows()
         print("program interrupted by the user")
-
 
 
 
