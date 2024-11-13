@@ -2,8 +2,7 @@
 import cv2
 import numpy as np
 import time
-from picamera import Picamera
-from picamera.array import PiRGBArray
+from picamera2 import Picamera2
 from tf_luna import TFLuna
 from ultralytics import YOLO
 
@@ -14,6 +13,24 @@ model = YOLO("yolo11n.pt")
 frames = 30
 IMAGE_WIDTH = model.imgsz[1]
 IMAGE_HEIGHT = model.imgsz[0]
+
+# for testing
+def visualize_fps(image, fps: int):
+    if len(np.shape(image)) < 3:
+        text_color = (255, 255, 255)  # white
+    else:
+        text_color = (0, 255, 0)  # green
+    row_size = 20  # pixels
+    left_margin = 24  # pixels
+
+    font_size = 1
+    font_thickness = 1
+
+    # Draw the FPS counter
+    fps_text = 'FPS = {:.1f}'.format(fps)
+    text_location = (left_margin, row_size)
+    cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, font_size, text_color, font_thickness)
+    return image
 
 #draws a bounding box around each object
 def detect_objects(frame):
@@ -27,18 +44,18 @@ def detect_objects(frame):
 if __name__ == "__main__":
     try:
         print("q to quit")
-
-        camera = cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT)
-        # create video capture
-        rawCapture = PiRGBArray(camera, size=(IMAGE_WIDTH, IMAGE_HEIGHT))
+        camera = Picamera2()
+        camera.configure(camera.create_preview_configuration(main={"format": 'XRGB8888', "size": (IMAGE_WIDTH, IMAGE_HEIGHT)}))
+        camera.start()
 
         time.sleep(1)
         fps = 0
         # record start time
         start_time = time.time()
 
-        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-            image = frame.array
+        while(1):
+            image = camera.capture_array()
+
             img_ob = detectObjects(image)
             # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
             cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
