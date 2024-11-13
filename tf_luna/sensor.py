@@ -3,8 +3,8 @@ import serial  # type: ignore
 import time
 import cv2
 import numpy as np
-from picamera import Picamera
-from picamera.array import PiRGBArray
+#from picamera import Picamera
+#from picamera.array import PiRGBArray
 
 class TFLuna:
     # port = serial port TF-Luna is connected to (~AMA0)
@@ -16,11 +16,11 @@ class TFLuna:
         self.period = None
 
     # Initialize camera
-    def cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT):
-        camera = PiCamera()
-        camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
-        camera.framerate = frames
-        return camera
+    #def cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT):
+        #camera = PiCamera()
+        #camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
+        #camera.framerate = frames
+        #return camera
 
     # for lidar
     def set_lid_samp(self, sample):
