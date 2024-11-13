@@ -29,7 +29,9 @@ object detection
 
 https://python.plainenglish.io/object-detection-with-yolo-and-opencv-from-video-frames-a814f9b079d6
 
-https://github.com/pjreddie/darknet/wiki/YOLO:-Real-Time-Object-Detection
+https://docs.ultralytics.com/modes/track/#persisting-tracks-loop
+
+https://github.com/ultralytics/ultralytics?tab=readme-ov-file
 
 
 keypoints 
