@@ -10,6 +10,24 @@ from tf_luna import TFLuna
 IMAGE_WIDTH = 320
 IMAGE_HEIGHT = 240
 
+# for testing
+def visualize_fps(image, fps: int):
+    if len(np.shape(image)) < 3:
+        text_color = (255, 255, 255)  # white
+    else:
+        text_color = (0, 255, 0)  # green
+    row_size = 20  # pixels
+    left_margin = 24  # pixels
+
+    font_size = 1
+    font_thickness = 1
+
+    # Draw the FPS counter
+    fps_text = 'FPS = {:.1f}'.format(fps)
+    text_location = (left_margin, row_size)
+    cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, font_size, text_color, font_thickness)
+    return image
+
 def keypoints(image):
     
     # Detect key points and compute descriptors
