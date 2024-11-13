@@ -11,8 +11,8 @@ model = YOLO("yolo11n.pt")
 
 #30 fps
 frames = 30
-IMAGE_WIDTH = model.imgsz[1]
-IMAGE_HEIGHT = model.imgsz[0]
+IMAGE_WIDTH = 320
+IMAGE_HEIGHT = 240
 
 # for testing
 def visualize_fps(image, fps: int):
