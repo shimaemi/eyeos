@@ -11,9 +11,6 @@ IMAGE_WIDTH = 320
 IMAGE_HEIGHT = 240
 
 def keypoints(image):
-    # Load the image and convery to grayscale
-    img = cv2.imread(image)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     # Detect key points and compute descriptors
     keypoints, descriptors = orb.detectAndCompute(img, None)
@@ -40,7 +37,11 @@ if __name__ == "__main__":
 
         while(1):
             image = camera.capture_array()
-            img_kp = keypoints(image)
+
+            # Load the image and convery to grayscale
+            frame_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+            img_kp = keypoints(frame_gray)
             cv2.imshow('Keypoints', visualize_fps(img_kp, fps))
             key = cv2.waitKey(1) & 0xFF
 
