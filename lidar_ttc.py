@@ -50,7 +50,7 @@ if __name__ == "__main__":
             ser.open()
         set_lid_samp(lid_samp)
         range = 0 # 1 if object within 10 sec, 2 if within 5
-        while(1)
+        while(1):
             lid_ttc = read_lidar()
             if lid_ttc <= 5 and lid_ttc > 0 and range < 2: # send an alert every time we enter the danger zone
                 vibrate2()
