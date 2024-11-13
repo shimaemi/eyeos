@@ -56,7 +56,7 @@ if __name__ == "__main__":
         while(1):
             image = camera.capture_array()
 
-            img_ob = detectObjects(image)
+            img_ob = detect_objects(image)
             # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
             cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
             key = cv2.waitKey(1) & 0xFF
