@@ -1,10 +1,20 @@
 import serial # uart
 import time
 from tf_luna import TFLuna
+import RPi.GPIO as GPIO
 ser = serial.Serial('/dev/serial0', 115200)
 
 lid_samp = 10 # set sample rate 
 t = 1 / lid_samp # period
+
+vibration_pin = 27
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(vibration_pin, GPIO.OUT)
+
+def vibrate():
+    GPIO.output(vibration_pin, GPIO.HIGH)
+    time.sleep(0.5)
+    GPIO.output(vibration_pin, GPIO.LOW)
 
 def read_lidar():
     i = 2
@@ -34,10 +44,10 @@ if __name__ == "__main__":
         while(1)
             lid_ttc = read_lidar()
             if lid_ttc <= 5 and lid_ttc > 0 and range < 2: # send an alert every time we enter the danger zone
-                print("est TTC: within 5 sec")
+                vibrate()
                 range = 2
             elif lid_ttc <= 10 and lid_ttc > 5 and range < 1:
-                print("est TTC: within 10 sec")
+                vibrate()
                 range = 1
             elif lid_ttc > 10 and range > 0:
                 range = 0
@@ -48,4 +58,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         if ser != None:
             ser.close()
+            GPIO.cleanup()
             print("program interrupted by the user")
