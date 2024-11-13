@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 import time
-from picamera2 import PiCamera2
+from picamera2 import Picamera2
 from tf_luna import TFLuna
 
 # 30 fps by default

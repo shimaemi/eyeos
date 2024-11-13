@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 import time
-from picamera import PiCamera
+from picamera import Picamera
 from picamera.array import PiRGBArray
 from tf_luna import TFLuna
 
