@@ -3,7 +3,7 @@ import serial  # type: ignore
 import time
 import cv2
 import numpy as np
-from picamera import PiCamera
+from picamera import Picamera
 from picamera.array import PiRGBArray
 
 class TFLuna:
