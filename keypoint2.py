@@ -38,7 +38,7 @@ if __name__ == "__main__":
         # record start time
         start_time = time.time()
 
-        while(1)
+        while(1):
             image = camera.capture_array()
             img_kp = keypoints(image)
             cv2.imshow('Keypoints', visualize_fps(img_kp, fps))
