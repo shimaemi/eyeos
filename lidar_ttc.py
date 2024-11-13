@@ -16,6 +16,15 @@ def vibrate():
     time.sleep(0.5)
     GPIO.output(vibration_pin, GPIO.LOW)
 
+def vibrate2():
+    GPIO.output(vibration_pin, GPIO.HIGH)
+    time.sleep(0.5)
+    GPIO.output(vibration_pin, GPIO.LOW)
+    time.sleep(0.5)
+    GPIO.output(vibration_pin, GPIO.HIGH)
+    time.sleep(0.5)
+    GPIO.output(vibration_pin, GPIO.LOW)
+
 def read_lidar():
     i = 2
     while i > 0:
@@ -44,7 +53,7 @@ if __name__ == "__main__":
         while(1)
             lid_ttc = read_lidar()
             if lid_ttc <= 5 and lid_ttc > 0 and range < 2: # send an alert every time we enter the danger zone
-                vibrate()
+                vibrate2()
                 range = 2
             elif lid_ttc <= 10 and lid_ttc > 5 and range < 1:
                 vibrate()
