@@ -35,7 +35,7 @@ def read_lidar():
             
             if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
                 curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
-                if i == 2
+                if i == 2:
                     prev = curr 
                 ser.reset_input_buffer()
                 i = i - 1
