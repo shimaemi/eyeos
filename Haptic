@@ -1,0 +1,30 @@
+import gpiozero import PWMOutputDevice
+from time import sleep
+
+Haptic = PWMOutputDevice(17)
+
+while True: 
+  active_high(True)
+    Haptic.on(on_time=2)  # on
+    
+------------------------------------------------------
+
+PWMOutDevice(pin17,active high=true)
+PWMOutputDevice(pin=17, active high=False)
+sleep (1)
+-------------------------------------------------------
+
+from gpiozero import OutputDevice
+from time import sleep
+
+# Initialize the haptic sensor on a specific GPIO pin
+haptic_sensor = OutputDevice(pin=17)  # Replace 17 with the GPIO pin you're using
+
+# Turn on the haptic sensor
+haptic_sensor.on()
+print("Haptic sensor is ON")
+sleep(1)  # Keep it on for 1 second
+
+# Turn off the haptic sensor
+haptic_sensor.off()
+print("Haptic sensor is OFF")
