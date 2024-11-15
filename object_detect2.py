@@ -6,8 +6,12 @@ from picamera2 import Picamera2
 from tf_luna import TFLuna
 from ultralytics import YOLO
 
-# Load the YOLO11 model
+# Load a YOLO11n PyTorch model
 model = YOLO("yolo11n.pt")
+# Export the model to NCNN format
+model.export(format="ncnn")  # creates 'yolo11n_ncnn_model'
+# Load the exported NCNN model
+ncnn_model = YOLO("yolo11n_ncnn_model")
 
 #30 fps
 frames = 30
@@ -35,7 +39,7 @@ def visualize_fps(image, fps: int):
 #draws a bounding box around each object
 def detect_objects(frame):
     # Run YOLO11 tracking on the frame, persisting tracks between frames
-    results = model.track(frame, persist=True)
+    results = ncnn_model.track(frame, persist=True)
 
     # Visualize the results on the frame
     annotated_frame = results[0].plot()

@@ -15,13 +15,6 @@ class TFLuna:
         self.sample_rate = None
         self.period = None
 
-    # Initialize camera
-    #def cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT):
-        #camera = PiCamera()
-        #camera.resolution = (IMAGE_WIDTH, IMAGE_HEIGHT)
-        #camera.framerate = frames
-        #return camera
-
     # for lidar
     def set_lid_samp(self, sample):
         # Change the sample rate

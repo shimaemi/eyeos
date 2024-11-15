@@ -2,14 +2,13 @@
 import cv2
 import numpy as np
 import time
-from picamera import Picamera
-from picamera.array import PiRGBArray
 from tf_luna import TFLuna
+from PIL import Image
 
-#30 fps
-frames = 30
-IMAGE_WIDTH = 320
-IMAGE_HEIGHT = 240
+cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+cap.set(cv2.CAP_PROP_FPS, 36)
 
 def keypoints(image):
     # Load the image and convery to grayscale
@@ -27,9 +26,6 @@ def keypoints(image):
 if __name__ == "__main__":
     try:
         print("q to quit")
-        camera = cam_init(frames, IMAGE_WIDTH, IMAGE_HEIGHT)
-        # create video capture
-        rawCapture = PiRGBArray(camera, size=(IMAGE_WIDTH, IMAGE_HEIGHT))
 
         # Initialize ORB detector
         orb = cv2.ORB_create(20)
@@ -39,8 +35,8 @@ if __name__ == "__main__":
         # record start time
         start_time = time.time()
 
-        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-            image = frame.array
+        while(1):
+            ret, image = cap.read()
             img_kp = keypoints(image)
             cv2.imshow('Keypoints', visualize_fps(img_kp, fps))
             key = cv2.waitKey(1) & 0xFF
@@ -58,9 +54,9 @@ if __name__ == "__main__":
             start_time = end_time
 
     except KeyboardInterrupt:
-        camera.close()
+        cap.release()
         cv2.destroyAllWindows()
     finally:
-        camera.close()
+        cap.release()
         cv2.destroyAllWindows()
         print("program interrupted by the user")

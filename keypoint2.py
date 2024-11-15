@@ -81,9 +81,3 @@ if __name__ == "__main__":
         camera.close()
         cv2.destroyAllWindows()
         print("program interrupted by the user")
-
-
-
-
-
-# in case the first one doesnt work
