@@ -2,7 +2,7 @@ import serial # uart
 import time
 from tf_luna import TFLuna
 import RPi.GPIO as GPIO
-import gpiozero import PWMOutputDevice
+from gpiozero import PWMOutputDevice
 
 ser = serial.Serial('/dev/serial0', 115200)
 

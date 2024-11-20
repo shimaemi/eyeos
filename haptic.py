@@ -1,7 +1,7 @@
 import serial # uart
 import time
 import RPi.GPIO as GPIO
-import gpiozero import PWMOutputDevice
+from gpiozero import PWMOutputDevice
 
 # Initialize the haptic sensor on a specific GPIO pin
 haptic_sensor = PWMOutputDevice(pin=4)
