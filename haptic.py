@@ -1,5 +1,5 @@
 import serial # uart
-import time import sleep
+from time import sleep
 import RPi.GPIO as GPIO
 from gpiozero import PWMOutputDevice
 
