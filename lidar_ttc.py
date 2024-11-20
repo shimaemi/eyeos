@@ -2,28 +2,29 @@ import serial # uart
 import time
 from tf_luna import TFLuna
 import RPi.GPIO as GPIO
+import gpiozero import PWMOutputDevice
+
 ser = serial.Serial('/dev/serial0', 115200)
 
 lid_samp = 10 # set sample rate 
 t = 1 / lid_samp # period
 
-vibration_pin = 27
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(vibration_pin, GPIO.OUT)
+# Initialize the haptic sensor on a specific GPIO pin
+haptic_sensor = PWMOutputDevice(17)  # Replace 17 with the GPIO pin you're using
 
 def vibrate():
-    GPIO.output(vibration_pin, GPIO.HIGH)
-    time.sleep(0.5)
-    GPIO.output(vibration_pin, GPIO.LOW)
+    haptic_sensor.on()
+    sleep(.1)
+    haptic_sensor.off()
 
 def vibrate2():
-    GPIO.output(vibration_pin, GPIO.HIGH)
-    time.sleep(0.5)
-    GPIO.output(vibration_pin, GPIO.LOW)
-    time.sleep(0.5)
-    GPIO.output(vibration_pin, GPIO.HIGH)
-    time.sleep(0.5)
-    GPIO.output(vibration_pin, GPIO.LOW)
+    haptic_sensor.on()
+    sleep(.1)
+    haptic_sensor.off()
+    sleep(.1)
+    haptic_sensor.on()
+    sleep(.1)
+    haptic_sensor.off()
 
 def read_lidar():
     i = 2
