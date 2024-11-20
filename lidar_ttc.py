@@ -12,6 +12,14 @@ t = 1 / lid_samp # period
 # Initialize the haptic sensor on a specific GPIO pin
 haptic_sensor = PWMOutputDevice(pin=4)
 
+# for lidar
+def set_lid_samp(self, sample):
+    # Change the sample rate
+    sample_packet = [0x5a,0x06,0x03,sample,00,00] # Sample rate byte array
+    self.ser.write(sample_packet) # Send sample rate instruction
+    time.sleep(0.1) # Wait or change to take effect
+    return 
+
 def vibrate():
     haptic_sensor.on()
     sleep(.5)
@@ -19,7 +27,7 @@ def vibrate():
 
 def vibrate2():
     haptic_sensor.on()
-    sleep(.5)
+    sleep(.5) 
     haptic_sensor.off()
     sleep(.5)
     haptic_sensor.on()

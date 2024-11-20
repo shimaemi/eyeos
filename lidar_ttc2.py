@@ -1,10 +1,31 @@
 import serial # uart
 import time
 from tf_luna import TFLuna
+import RPi.GPIO as GPIO
+from gpiozero import PWMOutputDevice
+
 ser = serial.Serial('/dev/serial0', 115200)
 # we define a new function that will get the data from LiDAR and publish it
 sample = 5 # set sample rate 5 / sec
 t = 1 / sample # period
+
+# Initialize the haptic sensor on a specific GPIO pin
+haptic_sensor = PWMOutputDevice(pin=4)
+
+def vibrate():
+    haptic_sensor.on()
+    sleep(.5)
+    haptic_sensor.off()
+
+def vibrate2():
+    haptic_sensor.on()
+    sleep(.5) 
+    haptic_sensor.off()
+    sleep(.5)
+    haptic_sensor.on()
+    sleep(.5)
+    haptic_sensor.off()
+
 def read_data():
     time.sleep(1)  # Sleep 1000ms
     range = 0 # 1 if object within 10 sec, 2 if within 5
@@ -20,10 +41,10 @@ def read_data():
                 if curr != prev:
                     ttc = curr * t / (prev - curr)
                 if ttc <= 5 and ttc > 0 and range < 2: # send an alert every time we enter the danger zone
-                    print("est TTC: within 5 sec")
+                    vibrate2()
                     range = 2
                 elif ttc <= 10 and ttc > 5 and range < 1:
-                    print("est TTC: within 10 sec")
+                    vibrate()
                     range = 1
                 elif ttc > 10 and range > 0:
                     range = 0
