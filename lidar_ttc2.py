@@ -1,5 +1,5 @@
 import serial # uart
-import time
+from time import sleep
 from tf_luna import TFLuna
 import RPi.GPIO as GPIO
 from gpiozero import PWMOutputDevice
