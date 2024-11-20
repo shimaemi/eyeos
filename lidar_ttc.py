@@ -14,16 +14,16 @@ haptic_sensor = PWMOutputDevice(pin=4)
 
 def vibrate():
     haptic_sensor.on()
-    sleep(.1)
+    sleep(.5)
     haptic_sensor.off()
 
 def vibrate2():
     haptic_sensor.on()
-    sleep(.1)
+    sleep(.5)
     haptic_sensor.off()
-    sleep(.1)
+    sleep(.5)
     haptic_sensor.on()
-    sleep(.1)
+    sleep(.5)
     haptic_sensor.off()
 
 def read_lidar():
