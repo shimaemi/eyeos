@@ -10,7 +10,7 @@ lid_samp = 10 # set sample rate
 t = 1 / lid_samp # period
 
 # Initialize the haptic sensor on a specific GPIO pin
-haptic_sensor = PWMOutputDevice(17)  # Replace 17 with the GPIO pin you're using
+haptic_sensor = PWMOutputDevice(pin=4)
 
 def vibrate():
     haptic_sensor.on()

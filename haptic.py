@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 import gpiozero import PWMOutputDevice
 
 # Initialize the haptic sensor on a specific GPIO pin
-haptic_sensor = PWMOutputDevice(17)  # Replace 17 with the GPIO pin you're using
+haptic_sensor = PWMOutputDevice(pin=4)
 
 def vibrate():
     haptic_sensor.on()
