@@ -6,7 +6,7 @@ from gpiozero import PWMOutputDevice
 
 ser = serial.Serial('/dev/serial0', 115200)
 # we define a new function that will get the data from LiDAR and publish it
-sample = 5 # set sample rate 5 / sec
+sample = 10 # set sample rate 5 / sec
 t = 1 / sample # period
 
 # Initialize the haptic sensor on a specific GPIO pin

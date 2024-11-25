@@ -7,6 +7,7 @@ from tf_luna import TFLuna
 from ultralytics import YOLO
 
 # Load a YOLO11n PyTorch model
+# creates 'yolo11n_ncnn_model'
 # Load the exported NCNN model
 ncnn_model = YOLO("yolo11n_ncnn_model")
 
@@ -58,26 +59,19 @@ if __name__ == "__main__":
             image = camera.capture_array()
 
             img_ob = detect_objects(image)
-            # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
-            cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
-            key = cv2.waitKey(1) & 0xFF
+
             # clear the stream in preparation for the next frame
-            rawCapture.truncate(0)
-            # if the `q` key was pressed, break from the loop
-            if key == ord("q"):
-                break
 
             # record end time
             end_time = time.time()
             # calculate FPS
             seconds = end_time - start_time
             fps = 1.0 / seconds
+            print("fps: " + str(fps))
             start_time = end_time
 
     except KeyboardInterrupt:
         camera.close()
-        cv2.destroyAllWindows()
     finally:
         camera.close()
-        cv2.destroyAllWindows()
         print("program interrupted by the user")
