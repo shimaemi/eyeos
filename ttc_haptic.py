@@ -14,7 +14,7 @@ sensor.set_sample(10)
 try:
     while True:
         ttc_value = sensor.print_ttc()
-        if ttc_value is not None:
+        if ttc_value is not None and ttc_value > 0:
             if ttc_value <= 5:
                 lgpio.tx_pwm(h, 18, 1000, 50)  # Strong vibration
             elif ttc_value <= 10:

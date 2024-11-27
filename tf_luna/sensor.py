@@ -1,15 +1,19 @@
 # sensor.py
 import serial  # type: ignore
+import lgpio
 import time
 
 class TFLuna:
     # port = serial port TF-Luna is connected to (~AMA0)
     # baudrate = communication speed default is set
-    def __init__(self, port, baudrate = 115200):
+    def __init__(self, port, baudrate = 115200, pwm_pin = 18):
         self.ser = serial.Serial(port, baudrate, timeout = 0)
         self.prev = 0
         self.sample_rate = None
         self.period = None
+        self.pwm_pin = pwm_pin
+        self.gpio = lgpio.gpiochip_open(0)
+        lgpio.gpio_claim_output(self.gpio, self.pwm_pin)
 
     def set_sample(self, sample = 100):
         # Change the sample rate
@@ -146,7 +150,7 @@ class TFLuna:
         else:
             print("Failed to read temperature.")
 
-    def print_ttc(self, single_run=False):
+    def print_ttc(self):
         period = self.get_period()
         time.sleep(1)  # Sleep 1000ms
         range = 0  # 1 if object within 10 sec, 2 if within 5
@@ -177,12 +181,8 @@ class TFLuna:
                             print("TTC:" + str(ttc) + " sec")
                         prev = curr
                         self.ser.reset_input_buffer()
-                        if single_run:
-                            return ttc  # Return the TTC value and exit the loop
-            if single_run:
-                break
 
-    def print_velocity(self, single_run=False):
+    def print_velocity(self):
         period = self.get_period()
         time.sleep(1)  # Sleep 1000ms
         prev = 0
@@ -201,13 +201,9 @@ class TFLuna:
                         print("velocity:" + str(velocity) + " cm/sec")
                         prev = curr
                     self.ser.reset_input_buffer()
-                    if single_run:
-                        return velocity  # Return the velocity value and exit the loop
-            if single_run:
-                break
 
 
-    def print_ttc_velocity(self, single_run=False):
+    def print_ttc_velocity(self):
         period = self.get_period()
         time.sleep(1)  # Sleep 1000ms
         prev = 0
@@ -226,13 +222,22 @@ class TFLuna:
                         velocity = round(velocity, 5)
                         print("TTC:" + str(ttc) + " sec")
                         print("velocity:" + str(velocity) + " cm/sec")
+                        self.set_vibration_intensity(ttc)  # Adjust vibration intensity based on TTC
                         prev = curr
                     self.ser.reset_input_buffer()
-                    if single_run:
-                        return ttc, velocity  # Return the TTC and velocity values and exit the loop
-            if single_run:
-                break
-                  
+
+    def set_vibration_intensity(self, ttc):
+        if ttc <= 0:
+            duty_cycle = 0
+        elif ttc <= 5:
+            duty_cycle = 100  # Maximum intensity
+        elif ttc <= 10:
+            duty_cycle = 50  # Medium intensity
+        else:
+            duty_cycle = 0  # No vibration
+
+        lgpio.tx_pwm(self.gpio, self.pwm_pin, 1000, duty_cycle)  # 1000 Hz frequency
+
 
     def close(self):
         self.ser.close()
