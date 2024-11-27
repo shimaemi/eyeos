@@ -2,6 +2,8 @@ from tf_luna import TFLuna
 import lgpio
 import time
 
+sensor = TFLuna('/dev/serial0', 115200)
+
 # Set up GPIO
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, 18)
