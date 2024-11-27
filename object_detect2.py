@@ -38,9 +38,15 @@ def detect_objects(frame):
     # Run YOLO11 tracking on the frame, persisting tracks between frames
     results = ncnn_model.track(frame, persist=True)
 
-    # Visualize the results on the frame
-    annotated_frame = results[0].plot()
-    return annotated_frame
+    # Draw bounding boxes and labels on the frame
+    for result in results[0].boxes:  # Access the bounding boxes directly
+        x1, y1, x2, y2 = result.xyxy[0]
+        confidence = result.conf[0]
+        class_id = result.cls[0]
+        label = model.names[int(class_id)]
+        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+        cv2.putText(frame, f"{label} {confidence:.2f}", (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    return frame
 
 if __name__ == "__main__":
     try:
