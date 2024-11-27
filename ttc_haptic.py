@@ -8,6 +8,9 @@ sensor = TFLuna('/dev/serial0', 115200)
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, 18)
 
+# Set up Sensor
+sensor.set_sample(10)
+
 try:
     while True:
         ttc_value = sensor.print_ttc()
