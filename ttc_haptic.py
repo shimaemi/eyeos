@@ -16,9 +16,9 @@ try:
         ttc_value = sensor.print_ttc()
         if ttc_value is not None:
             if ttc_value <= 5:
-                lgpio.tx_pwm(h, 18, 1000, 500000)  # Strong vibration
+                lgpio.tx_pwm(h, 18, 1000, 50)  # Strong vibration
             elif ttc_value <= 10:
-                lgpio.tx_pwm(h, 18, 1000, 250000)  # Medium vibration
+                lgpio.tx_pwm(h, 18, 1000, 25)  # Medium vibration
             else:
                 lgpio.tx_pwm(h, 18, 0, 0)  # No vibration
 
