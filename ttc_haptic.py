@@ -4,7 +4,7 @@ import time
 
 # Set up GPIO
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.out)
+GPIO.setup(18, GPIO.OUT)
 
 pwm = GPIO.PWM(18, 100)
 pwm.start(0)
