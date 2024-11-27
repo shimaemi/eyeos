@@ -63,9 +63,9 @@ if __name__ == "__main__":
 
         while(1):
             image = picam2.capture_array()
-            image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+            cimage = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
 
-            img_ob = detect_objects(image)
+            img_ob = detect_objects(cimage)
             # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
             cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
             key = cv2.waitKey(1) & 0xFF
