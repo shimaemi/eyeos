@@ -8,7 +8,7 @@ from ultralytics import YOLO
 
 # Load a YOLO11n PyTorch model
 # Load the exported NCNN model
-ncnn_model = YOLO("yolo11n_ncnn_model")
+ncnn_model = YOLO("yolo11n.pt")
 
 #30 fps
 frames = 30
