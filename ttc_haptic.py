@@ -9,10 +9,13 @@ def main():
         # Set the sample rate
         sensor.set_sample(100)  # Set to 100 Hz or your desired sample rate
         print("Sample rate set to 100 Hz.")
-        
+
+        print("Starting distance and adjusting vibration intensity")
+        sensor.print_ttc()
+
         # Test reading distance and adjusting vibration intensity
-        print("Starting TTC and vibration motor test...")
-        sensor.print_ttc_velocity()
+#        print("Starting TTC and vibration motor test...")
+#        sensor.print_ttc_velocity()
         
     except KeyboardInterrupt:
         print("Test interrupted by user.")

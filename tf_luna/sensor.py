@@ -170,15 +170,20 @@ class TFLuna:
                         if ttc <= 5 and ttc > 0 and range < 2:  # send an alert every time we enter the danger zone
                             print("est TTC: within 5 sec")
                             range = 2
+                            self.set_vibration_intensity(ttc)
                         elif ttc <= 10 and ttc > 5 and range < 1:
                             print("est TTC: within 10 sec")
                             range = 1
+                            self.set_vibration_intensity(ttc)
                         elif ttc > 10 and range > 0:
                             range = 0
+                            self.set_vibration_intensity(ttc)
                         elif ttc <= 10 and ttc > 5 and range > 1:
                             range = 1
+                            self.set_vibration_intensity(ttc)
                         else:
                             print("TTC:" + str(ttc) + " sec")
+                            self.set_vibration_intensity(ttc)
                         prev = curr
                         self.ser.reset_input_buffer()
 
