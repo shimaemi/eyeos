@@ -1,30 +1,21 @@
-from tf_luna import TFLuna
-import lgpio
 import time
+from sensor import TFLuna
 
-sensor = TFLuna('/dev/serial0', 115200)
+def main():
+    # Initialize the TFLuna sensor
+    sensor = TFLuna(port='/dev/ttyAMA0', baudrate=115200, pwm_pin=18)
+    
+    try:
+        # Test reading distance and adjusting vibration intensity
+        print("Starting TTC and vibration motor test...")
+        sensor.print_ttc_velocity()
+        
+    except KeyboardInterrupt:
+        print("Test interrupted by user.")
+    finally:
+        # Close the sensor and GPIO resources
+        sensor.close()
+        print("Sensor and GPIO resources closed.")
 
-# Set up GPIO
-h = lgpio.gpiochip_open(0)
-lgpio.gpio_claim_output(h, 18)
-
-# Set up Sensor
-sensor.set_sample(10)
-
-try:
-    while True:
-        ttc_value = sensor.print_ttc()
-        if ttc_value is not None and ttc_value > 0:
-            if ttc_value <= 5:
-                lgpio.tx_pwm(h, 18, 1000, 50)  # Strong vibration
-            elif ttc_value <= 10:
-                lgpio.tx_pwm(h, 18, 1000, 25)  # Medium vibration
-            else:
-                lgpio.tx_pwm(h, 18, 0, 0)  # No vibration
-
-except KeyboardInterrupt:
-    pass
-finally:
-    lgpio.tx_pwm(h, 18, 0, 0)  # Stop PWM
-    lgpio.gpiochip_close(h)
-
+if __name__ == "__main__":
+    main()
