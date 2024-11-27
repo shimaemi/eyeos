@@ -1,24 +1,22 @@
 from tf_luna import TFLuna
-import RPi.GPIO as GPIO
+import lgpio
 import time
 
 # Set up GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.OUT)
+h = lgpio.gpiochip_open(0)
+lgpio.gpio_claim_output(h, 18)
 
-pwm = GPIO.PWM(18, 100)
-pwm.start(0)
+# Function to vibrate the motor
+def vibrate_motor(duration):
+    lgpio.gpio_write(h, 18, 1)
+    time.sleep(duration)
+    lgpio.gpio_write(h, 18, 0)
 
 try:
     while True:
-        for duty_cycle in range(0, 101, 5):  # Increase duty cycle from 0 to 100
-            pwm.ChangeDutyCycle(duty_cycle)
-            time.sleep(0.1)
-        for duty_cycle in range(100, -1, -5):  # Decrease duty cycle from 100 to 0
-            pwm.ChangeDutyCycle(duty_cycle)
-            time.sleep(0.1)
+        vibrate_motor(1)  # Vibrate for 1 second
+        time.sleep(2)     # Wait for 2 seconds
 except KeyboardInterrupt:
     pass
 finally:
-    pwm.stop()
-    GPIO.cleanup()
+    lgpio.gpiochip_close(h)
