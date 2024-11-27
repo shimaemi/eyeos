@@ -62,7 +62,6 @@ if __name__ == "__main__":
             cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
             key = cv2.waitKey(1) & 0xFF
             # clear the stream in preparation for the next frame
-            rawCapture.truncate(0)
             # if the `q` key was pressed, break from the loop
             if key == ord("q"):
                 break

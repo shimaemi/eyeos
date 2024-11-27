@@ -6,7 +6,6 @@ import time
 from picamera2 import Picamera2
 from tf_luna import TFLuna
 from ultralytics import YOLO
-from gpiozero import PWMOutputDevice
 import lgpio
 
 ser = serial.Serial('/dev/serial0', 115200)
