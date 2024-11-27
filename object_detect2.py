@@ -8,7 +8,7 @@ from ultralytics import YOLO
 
 # Load a YOLO11n PyTorch model
 # Load the exported NCNN model
-ncnn_model = YOLO("yolo11n.pt")
+ncnn_model = YOLO("yolo11n_ncnn_model")
 
 #30 fps
 frames = 30
@@ -36,7 +36,7 @@ def visualize_fps(image, fps: int):
 #draws a bounding box around each object
 def detect_objects(frame):
     # Run YOLO11 tracking on the frame, persisting tracks between frames
-    results = ncnn_model.track(frame, persist=True)
+    results = ncnn_model(frame)
 
     # Draw bounding boxes and labels on the frame
     for result in results[0].boxes:  # Access the bounding boxes directly
@@ -51,9 +51,10 @@ def detect_objects(frame):
 if __name__ == "__main__":
     try:
         print("q to quit")
-        camera = Picamera2()
-        camera.configure(camera.create_preview_configuration(main={"format": 'XRGB8888', "size": (IMAGE_WIDTH, IMAGE_HEIGHT)}))
-        camera.start()
+        picam2 = Picamera2()
+        config = picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (1920, 1080)})
+        picam2.configure(config)
+        picam2.start()
 
         time.sleep(1)
         fps = 0
@@ -61,7 +62,8 @@ if __name__ == "__main__":
         start_time = time.time()
 
         while(1):
-            image = camera.capture_array()
+            image = picam2.capture_array()
+            image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
             img_ob = detect_objects(image)
             # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
@@ -80,9 +82,9 @@ if __name__ == "__main__":
             start_time = end_time
 
     except KeyboardInterrupt:
-        camera.close()
+        picam2.stop()
         cv2.destroyAllWindows()
     finally:
-        camera.close()
+        picam2.stop()
         cv2.destroyAllWindows()
         print("program interrupted by the user")
