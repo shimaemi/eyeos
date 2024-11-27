@@ -52,7 +52,7 @@ if __name__ == "__main__":
     try:
         print("q to quit")
         picam2 = Picamera2()
-        config = picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (1920, 1080)})
+        config = picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (IMAGE_WIDTH, IMAGE_HEIGHT)})
         picam2.configure(config)
         picam2.start()
 
