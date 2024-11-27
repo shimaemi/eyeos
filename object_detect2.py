@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
         while(1):
             image = picam2.capture_array()
-            image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+            image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
 
             img_ob = detect_objects(image)
             # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
