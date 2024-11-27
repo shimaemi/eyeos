@@ -6,17 +6,17 @@ import time
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, 18)
 
-# Function to vibrate the motor
-def vibrate_motor(duration):
-    lgpio.gpio_write(h, 18, 1)
-    time.sleep(duration)
-    lgpio.gpio_write(h, 18, 0)
-
 try:
     while True:
-        vibrate_motor(1)  # Vibrate for 1 second
-        time.sleep(2)     # Wait for 2 seconds
+        for duty_cycle in range(0, 101, 10):
+            lgpio.tx_pwm(h, 18, 100, duty_cycle)
+            time.sleep(1)
+        for duty_cycle in range(0, -1, -10):
+            lgpio.tx_pwm(h, 18, 100, duty_cycle)
+            time.sleep(1)
 except KeyboardInterrupt:
     pass
 finally:
+    lgpio.tx_pwm(h, 18, 0, 0)  # Stop PWM
     lgpio.gpiochip_close(h)
+
