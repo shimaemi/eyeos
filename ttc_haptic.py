@@ -1,5 +1,5 @@
 import time
-from sensor import TFLuna
+from tf_luna import TFLuna
 
 def main():
     # Initialize the TFLuna sensor
