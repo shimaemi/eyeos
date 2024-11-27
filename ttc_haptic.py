@@ -23,6 +23,8 @@ def main():
         # Close the sensor and GPIO resources
         sensor.close()
         print("Sensor and GPIO resources closed.")
+        
 
 if __name__ == "__main__":
     main()
+    exit 0
