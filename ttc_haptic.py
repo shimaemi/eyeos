@@ -6,6 +6,10 @@ def main():
     sensor = TFLuna(port='/dev/ttyAMA0', baudrate=115200, pwm_pin=18)
     
     try:
+        # Set the sample rate
+        sensor.set_sample(100)  # Set to 100 Hz or your desired sample rate
+        print("Sample rate set to 100 Hz.")
+        
         # Test reading distance and adjusting vibration intensity
         print("Starting TTC and vibration motor test...")
         sensor.print_ttc_velocity()
