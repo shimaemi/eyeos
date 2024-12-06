@@ -1,4 +1,6 @@
 # test to display image bounding boxes
+# runs camera, lidar and haptic
+
 import serial # uart
 import cv2
 import numpy as np
@@ -13,7 +15,6 @@ ser = serial.Serial('/dev/serial0', 115200)
 sample = 10 # set sample rate 5 / sec
 t = 1 / sample # period
 
-# Load a YOLO11n PyTorch model
 # Load the exported NCNN model
 ncnn_model = YOLO("yolo11n_ncnn_model")
 
@@ -43,7 +44,7 @@ def visualize_fps(image, fps: int):
 #draws a bounding box around each object
 def detect_objects(frame):
     # Run YOLO11 tracking on the frame, persisting tracks between frames
-    results = ncnn_model.track(frame, persist=True)
+    results = ncnn_model(frame)
 
     # Draw bounding boxes and labels on the frame
     for result in results[0].boxes:  # Access the bounding boxes directly
@@ -97,8 +98,7 @@ if __name__ == "__main__":
             # cv2.namedWindow("Object Classification", cv2.WINDOW_NORMAL)
             cv2.imshow('Object Classification', visualize_fps(img_ob, fps))
             key = cv2.waitKey(1) & 0xFF
-            # clear the stream in preparation for the next frame
-            rawCapture.truncate(0)
+
             # if the `q` key was pressed, break from the loop
             if key == ord("q"):
                 break
