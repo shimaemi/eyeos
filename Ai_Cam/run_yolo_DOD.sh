@@ -1,0 +1,1 @@
+python Directional_Object_Detection.py --model /usr/share/imx500-models/imx500_network_yolo8npp.rpk
