@@ -6,7 +6,7 @@ import time
 class TFLuna:
     # port = serial port TF-Luna is connected to (~AMA0)
     # baudrate = communication speed default is set
-    def __init__(self, port, baudrate = 115200, pwm_pin = 18):
+    def __init__(self, port, baudrate = 115200, pwm_pin):
         self.ser = serial.Serial(port, baudrate, timeout = 0)
         self.prev = 0
         self.sample_rate = None
@@ -170,15 +170,20 @@ class TFLuna:
                         if ttc <= 5 and ttc > 0 and range < 2:  # send an alert every time we enter the danger zone
                             print("est TTC: within 5 sec")
                             range = 2
+                            self.set_vibration_intensity(ttc)
                         elif ttc <= 10 and ttc > 5 and range < 1:
                             print("est TTC: within 10 sec")
                             range = 1
+                            self.set_vibration_intensity(ttc)
                         elif ttc > 10 and range > 0:
                             range = 0
+                            self.set_vibration_intensity(ttc)
                         elif ttc <= 10 and ttc > 5 and range > 1:
                             range = 1
+                            self.set_vibration_intensity(ttc)
                         else:
                             print("TTC:" + str(ttc) + " sec")
+                            self.set_vibration_intensity(ttc)
                         prev = curr
                         self.ser.reset_input_buffer()
 
