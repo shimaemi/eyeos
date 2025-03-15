@@ -1,3 +1,5 @@
+# test to display image keypoints
+
 import argparse
 import sys
 from functools import lru_cache
@@ -14,9 +16,12 @@ from tf_luna import TFLuna
 import time
 
 last_detections = []
-left = 0
-middle = 0
-right = 0
+
+# 30 fps by default
+# frames = 30
+IMAGE_WIDTH = 320
+IMAGE_HEIGHT = 240
+fps = 0
 
 
 class Detection:
@@ -25,7 +30,6 @@ class Detection:
         self.category = category
         self.conf = conf
         self.box = imx500.convert_inference_coords(coords, metadata, picam2)
-
 
 def parse_detections(metadata: dict):
     """Parse the output tensor into a number of detected objects, scaled to the ISP output."""
@@ -76,7 +80,6 @@ def get_labels():
 def draw_detections(request, stream="main"):
     """Draw the detections for this request onto the ISP output."""
     detections = last_results
-    left, right, middle = 0
     if detections is None:
         return
     labels = get_labels()
@@ -91,13 +94,10 @@ def draw_detections(request, stream="main"):
             # Determine position category
             if object_center_x < img_width // 3:
                 position = "Left"
-                left = 100
             elif object_center_x > (2 * img_width) // 3:
                 position = "Right"
-                right = 100
             else:
                 position = "Middle"
-                middle = 100
 
             # Create label with object name, confidence, and position
             label = f"{labels[int(detection.category)]} ({detection.conf:.2f}) - {position}"
@@ -123,6 +123,18 @@ def draw_detections(request, stream="main"):
             # Draw bounding box around object
             cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), thickness=2)
 
+            # Load the image and convery to grayscale
+            cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
+            # Detect key points and compute descriptors
+            keypoints, descriptors = orb.detectAndCompute(m.array, None)
+            # for x in keypoints:
+                # print("({:.2f},{:.2f}) = size {:.2f} angle {:.2f}".format(x.pt[0], x.pt[1], x.size, x.angle))
+            cv2.drawKeypoints(m.array, keypoints, None,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+            # Draw the FPS counter
+            fps_text = 'FPS = {:.1f}'.format(fps)
+            text_location = (24, 20)
+            cv2.putText(m.array, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
 
 
 def get_args():
@@ -188,15 +200,23 @@ if __name__ == "__main__":
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
 
+    # Initialize ORB detector
+    orb = cv2.ORB_create(20)
+    # record start time
+    start_time = time.time()
+
     last_results = None
     picam2.pre_callback = draw_detections
-    lgpio.tx_pwm(self.gpio, 18, 1000, right)  # 1000 Hz frequency
-    lgpio.tx_pwm(self.gpio, 19, 1000, middle)  # 1000 Hz frequency
-    lgpio.tx_pwm(self.gpio, 20, 1000, left)  # 1000 Hz frequency
     while True:
         last_results = parse_detections(picam2.capture_metadata())
+
+        # record end time
+        end_time = time.time()
+        # calculate FPS
+        seconds = end_time - start_time
+        fps = 1.0 / seconds
+        start_time = end_time
     except KeyboardInterrupt:
-        sensor.close()
         camera.close()
         cv2.destroyAllWindows()
         print("program interrupted by the user")
