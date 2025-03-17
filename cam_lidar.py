@@ -1,4 +1,4 @@
-# runs camera, haptic
+# runs camera, lidar
 
 import serial # uart
 import lgpio
@@ -9,6 +9,7 @@ from functools import lru_cache
 
 import cv2
 import numpy as np
+from collections import defaultdict
 
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
@@ -19,9 +20,17 @@ from tf_luna import TFLuna
 import time
 
 last_detections = []
-left = 0
-middle = 0
-right = 0
+
+ser = serial.Serial('/dev/serial0', 115200)
+# we define a new function that will get the data from LiDAR and publish it
+sample = 100 # set sample rate 5 / sec
+t = 1 / sample # period
+
+# 30 fps by default
+# frames = 30
+IMAGE_WIDTH = 320
+IMAGE_HEIGHT = 240
+fps = 0
 
 
 class Detection:
@@ -30,7 +39,6 @@ class Detection:
         self.category = category
         self.conf = conf
         self.box = imx500.convert_inference_coords(coords, metadata, picam2)
-
 
 def parse_detections(metadata: dict):
     """Parse the output tensor into a number of detected objects, scaled to the ISP output."""
@@ -81,7 +89,6 @@ def get_labels():
 def draw_detections(request, stream="main"):
     """Draw the detections for this request onto the ISP output."""
     detections = last_results
-    left, right, middle = 0
     if detections is None:
         return
     labels = get_labels()
@@ -96,13 +103,15 @@ def draw_detections(request, stream="main"):
             # Determine position category
             if object_center_x < img_width // 3:
                 position = "Left"
-                left = 100
             elif object_center_x > (2 * img_width) // 3:
                 position = "Right"
-                right = 100
             else:
                 position = "Middle"
-                middle = 100
+
+            # Draw the FPS counter
+            fps_text = 'FPS = {:.1f}'.format(fps)
+            text_location = (24, 20)
+            cv2.putText(m.array, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
 
             # Create label with object name, confidence, and position
             label = f"{labels[int(detection.category)]} ({detection.conf:.2f}) - {position}"
@@ -127,7 +136,6 @@ def draw_detections(request, stream="main"):
 
             # Draw bounding box around object
             cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), thickness=2)
-
 
 
 def get_args():
@@ -184,6 +192,13 @@ if __name__ == "__main__":
         print(intrinsics)
         exit()
 
+    # Initialize the TFLuna sensor
+    sensor = TFLuna(port='/dev/ttyAMA0', baudrate=115200, pwm_pin=18)
+    # Set the sample rate
+    sensor.set_sample(sample)  # Set to 100 Hz or your desired sample rate
+    period = self.get_period()
+    prev = 0
+
     picam2 = Picamera2(imx500.camera_num)
     config = picam2.create_preview_configuration(controls={"FrameRate": intrinsics.inference_rate}, buffer_count=12)
 
@@ -193,15 +208,37 @@ if __name__ == "__main__":
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
 
+    # record start time
+    start_time = time.time()
+
     last_results = None
     picam2.pre_callback = draw_detections
-    lgpio.tx_pwm(self.gpio, 18, 1000, right)  # 1000 Hz frequency
-    lgpio.tx_pwm(self.gpio, 19, 1000, middle)  # 1000 Hz frequency
-    lgpio.tx_pwm(self.gpio, 20, 1000, left)  # 1000 Hz frequency
     while True:
         last_results = parse_detections(picam2.capture_metadata())
+
+        counter = self.ser.in_waiting  # count the number of bytes of the serial port
+        if counter > 8:
+            bytes_serial = self.ser.read(9)
+            self.ser.reset_input_buffer()
+    
+            if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59:  # python3
+                curr = bytes_serial[2] + bytes_serial[3] * 256  # centimeters
+                if curr != prev:
+                    ttc = curr * period / (prev - curr)  # .01 = time between two measurements in seconds, 1 / framerate (100hz default)
+                    ttc = round(ttc, 5)
+                    print("TTC:" + str(ttc) + " sec")
+                    prev = curr
+                self.ser.reset_input_buffer()
+
+        # record end time
+        end_time = time.time()
+        # calculate FPS
+        seconds = end_time - start_time
+        fps = 1.0 / seconds
+        start_time = end_time
     except KeyboardInterrupt:
-        sensor.close()
+        if ser != None:
+            ser.close()
         camera.close()
         cv2.destroyAllWindows()
         print("program interrupted by the user")
