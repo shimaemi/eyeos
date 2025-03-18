@@ -2,7 +2,6 @@
 
 import serial # uart
 import lgpio
-import bluetooth
 import pyttsx3
 import argparse
 import sys
@@ -212,15 +211,6 @@ if __name__ == "__main__":
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
 
-    # specify the MAC address of the device you want to connect to
-    target_device = "41:42:64:07:20:BB"
-
-    # pair with the device
-    bluetooth.pair(target_device)
-
-    subprocess.run(['bluetoothctl', 'connect', target_device])
-    time.sleep(1)
-
     engine = pyttsx3.init() # object creation
     engine.setProperty('rate', 125)     # setting up new voice rate
     engine.setProperty('volume',1.0)    # setting up volume level  between 0 and 1
@@ -255,6 +245,7 @@ if __name__ == "__main__":
 
         if range = 1
             engine.say(str(tts))
+            engine.runAndWait()
             tts = ""
             range = 2
 
