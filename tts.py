@@ -1,7 +1,6 @@
 # pip install pyttsx3
 #  sudo apt update && sudo apt install espeak-ng libespeak1
 
-import bluetooth
 import pyttsx3
 import time
 
