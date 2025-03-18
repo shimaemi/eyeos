@@ -92,6 +92,7 @@ def draw_detections(request, stream="main"):
     """Draw the detections for this request onto the ISP output."""
     detections = last_results
     if detections is None:
+        tts = "wall"
         return
     labels = get_labels()
     

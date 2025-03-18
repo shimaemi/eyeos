@@ -1,8 +1,6 @@
 # runs camera, haptic
 
 import serial # uart
-import lgpio
-
 import argparse
 import sys
 from functools import lru_cache
@@ -17,6 +15,12 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
 
 from tf_luna import TFLuna
 import time
+import board
+import busio
+import adafruit_drv2605
+
+i2c = busio.I2C(board.SCL, board.SDA)
+drv = adafruit_drv2605.DRV2605(i2c)
 
 last_detections = []
 left = 0
@@ -96,13 +100,13 @@ def draw_detections(request, stream="main"):
             # Determine position category
             if object_center_x < img_width // 3:
                 position = "Left"
-                left = 100
+                left = 119
             elif object_center_x > (2 * img_width) // 3:
                 position = "Right"
-                right = 100
+                right = 119
             else:
                 position = "Middle"
-                middle = 100
+                middle = 119
 
             # Create label with object name, confidence, and position
             label = f"{labels[int(detection.category)]} ({detection.conf:.2f}) - {position}"
@@ -197,9 +201,11 @@ if __name__ == "__main__":
     picam2.pre_callback = draw_detections
     while True:
         last_results = parse_detections(picam2.capture_metadata())
-        lgpio.tx_pwm(self.gpio, 18, 1000, right)  # 1000 Hz frequency
-        lgpio.tx_pwm(self.gpio, 19, 1000, middle)  # 1000 Hz frequency
-        lgpio.tx_pwm(self.gpio, 20, 1000, left)  # 1000 Hz frequency
+        drv.sequence[0] = adafruit_drv2605.Effect(middle)
+        if(middle>0)
+            drv.play()
+        else
+            drv.stop()
     except KeyboardInterrupt:
         sensor.close()
         camera.close()
