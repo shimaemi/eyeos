@@ -195,11 +195,11 @@ if __name__ == "__main__":
 
     last_results = None
     picam2.pre_callback = draw_detections
-    lgpio.tx_pwm(self.gpio, 18, 1000, right)  # 1000 Hz frequency
-    lgpio.tx_pwm(self.gpio, 19, 1000, middle)  # 1000 Hz frequency
-    lgpio.tx_pwm(self.gpio, 20, 1000, left)  # 1000 Hz frequency
     while True:
         last_results = parse_detections(picam2.capture_metadata())
+        lgpio.tx_pwm(self.gpio, 18, 1000, right)  # 1000 Hz frequency
+        lgpio.tx_pwm(self.gpio, 19, 1000, middle)  # 1000 Hz frequency
+        lgpio.tx_pwm(self.gpio, 20, 1000, left)  # 1000 Hz frequency
     except KeyboardInterrupt:
         sensor.close()
         camera.close()
