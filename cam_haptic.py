@@ -24,8 +24,8 @@ import RPi.GPIO as GPIO
 #drv1 = adafruit_drv2605.DRV2605(i2c)
 #drv2 = adafruit_drv2605.DRV2605(i2c)
 
-drv1 = 19
-drv2 = 
+drv1 = 18
+drv2 = 17
 #GPIO.setup(GPIO.BCM)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(drv1, GPIO.OUT)
