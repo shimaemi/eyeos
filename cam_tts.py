@@ -1,7 +1,8 @@
 # runs camera, lidar, tts
 
 import serial # uart
-import espeak
+import lgpio
+import pyttsx3
 import argparse
 import sys
 from functools import lru_cache
@@ -211,8 +212,10 @@ if __name__ == "__main__":
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
 
-    espeak.init()
-    speaker = espeak.Espeak()
+    engine = pyttsx3.init() # object creation
+    engine.setProperty('rate', 125)     # setting up new voice rate
+    engine.setProperty('volume',1.0)    # setting up volume level  between 0 and 1
+    engine.setProperty('voice', voices[1].id)   #changing index, changes voices. 1 for female
 
     prev = 0
     # record start time
@@ -242,7 +245,8 @@ if __name__ == "__main__":
                 ser.reset_input_buffer()
 
         if range == 1:
-            speaker.say(tts)
+            engine.say(str(tts))
+            engine.runAndWait()
             tts = ""
             range = 2
 
