@@ -6,7 +6,7 @@ import time
 class TFLuna:
     # port = serial port TF-Luna is connected to (~AMA0)
     # baudrate = communication speed default is set
-    def __init__(self, port, baudrate = 115200, pwm_pin):
+    def __init__(self, port, baudrate = 115200, pwm_pin = 18):
         self.ser = serial.Serial(port, baudrate, timeout = 0)
         self.prev = 0
         self.sample_rate = None
