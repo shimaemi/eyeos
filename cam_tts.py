@@ -244,7 +244,7 @@ if __name__ == "__main__":
                 prev = curr 
                 ser.reset_input_buffer()
 
-        if range == 1
+        if range == 1:
             engine.say(str(tts))
             engine.runAndWait()
             tts = ""
