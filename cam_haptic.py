@@ -215,10 +215,10 @@ if __name__ == "__main__":
     while True:
         last_results = parse_detections(picam2.capture_metadata())
         #drv.sequence[0] = adafruit_drv2605.Effect(middle)
-        if(right>0)
+        if(right>0):
             GPIO.output(drv1, False)
             GPIO.output(drv2, True)
-        elif(left>0)
+        elif(left>0):
             GPIO.output(drv2, False)
             GPIO.output(drv1, True)
 
