@@ -236,9 +236,9 @@ if __name__ == "__main__":
         seconds = end_time - start_time
         fps = 1.0 / seconds
         start_time = end_time
-    except KeyboardInterrupt:
-        if ser != None:
-            ser.close()
-        camera.close()
-        cv2.destroyAllWindows()
-        print("program interrupted by the user")
+
+if ser != None:
+    ser.close()
+camera.close()
+cv2.destroyAllWindows()
+print("program interrupted by the user")

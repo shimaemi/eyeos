@@ -1,4 +1,4 @@
-# runs camera, lidar, tts
+# runs everything
 
 import serial # uart
 import lgpio
@@ -18,6 +18,21 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
 
 from tf_luna import TFLuna
 import time
+#import board
+#import busio
+import RPi.GPIO as GPIO
+#import adafruit_drv2605
+
+#i2c = busio.I2C(board.SCL, board.SDA)
+#drv1 = adafruit_drv2605.DRV2605(i2c)
+#drv2 = adafruit_drv2605.DRV2605(i2c)
+
+drv1 = 19
+drv2 = 20
+#GPIO.setup(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(drv1, GPIO.OUT)
+GPIO.setup(drv2, GPIO.OUT)
 
 last_detections = []
 
@@ -250,15 +265,23 @@ if __name__ == "__main__":
             tts = ""
             range = 2
 
+        #drv.sequence[0] = adafruit_drv2605.Effect(middle)
+        if(right>0)
+            GPIO.output(drv1, False)
+            GPIO.output(drv2, True)
+        elif(left>0)
+            GPIO.output(drv2, False)
+            GPIO.output(drv1, True)
+
         # record end time
         end_time = time.time()
         # calculate FPS
         seconds = end_time - start_time
         fps = 1.0 / seconds
-        start_time = end_time
 
 if ser != None:
     ser.close()
+sensor.close()
 camera.close()
 cv2.destroyAllWindows()
 print("program interrupted by the user")

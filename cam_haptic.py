@@ -15,12 +15,21 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
 
 from tf_luna import TFLuna
 import time
-import board
-import busio
-import adafruit_drv2605
+#import board
+#import busio
+import RPi.GPIO as GPIO
+#import adafruit_drv2605
 
-i2c = busio.I2C(board.SCL, board.SDA)
-drv = adafruit_drv2605.DRV2605(i2c)
+#i2c = busio.I2C(board.SCL, board.SDA)
+#drv1 = adafruit_drv2605.DRV2605(i2c)
+#drv2 = adafruit_drv2605.DRV2605(i2c)
+
+drv1 = 19
+drv2 = 20
+#GPIO.setup(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(drv1, GPIO.OUT)
+GPIO.setup(drv2, GPIO.OUT)
 
 last_detections = []
 left = 0
@@ -201,13 +210,15 @@ if __name__ == "__main__":
     picam2.pre_callback = draw_detections
     while True:
         last_results = parse_detections(picam2.capture_metadata())
-        drv.sequence[0] = adafruit_drv2605.Effect(middle)
-        if(middle>0)
-            drv.play()
-        else
-            drv.stop()
-    except KeyboardInterrupt:
-        sensor.close()
-        camera.close()
-        cv2.destroyAllWindows()
-        print("program interrupted by the user")
+        #drv.sequence[0] = adafruit_drv2605.Effect(middle)
+        if(right>0)
+            GPIO.output(drv1, False)
+            GPIO.output(drv2, True)
+        elif(left>0)
+            GPIO.output(drv2, False)
+            GPIO.output(drv1, True)
+
+sensor.close()
+camera.close()
+cv2.destroyAllWindows()
+print("program interrupted by the user")
