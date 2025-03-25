@@ -1,7 +1,6 @@
 # runs camera, lidar, tts
 
 import serial # uart
-import lgpio
 import espeak
 import argparse
 import sys
