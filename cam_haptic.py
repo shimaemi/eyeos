@@ -25,11 +25,15 @@ import RPi.GPIO as GPIO
 #drv2 = adafruit_drv2605.DRV2605(i2c)
 
 drv1 = 19
-drv2 = 20
+drv2 = 
 #GPIO.setup(GPIO.BCM)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(drv1, GPIO.OUT)
 GPIO.setup(drv2, GPIO.OUT)
+
+#Motors off 
+GPIO.setup(drv1, GPIO.LOW)
+GPIO.setup(drv2, GPIO.LOW)
 
 last_detections = []
 left = 0
