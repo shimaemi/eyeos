@@ -244,3 +244,6 @@ if __name__ == "__main__":
                                 speaker.announce(f"Multiple objects on the {position} including {unique_labels[0]}")
         
             time.sleep(0.1)
+    except KeyboardInterrupt:
+    picam2.stop()
+    print("Camera stopped gracefully")    
