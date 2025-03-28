@@ -90,6 +90,17 @@ def get_labels():
     return labels
 
 
+def get_position(detection, img_width):
+    """Helper function to determine position (left/center/right) of a detection."""
+    x, y, w, h = detection.box
+    object_center_x = x + w // 2
+    if object_center_x < img_width // 3:
+        return "left"
+    elif object_center_x > (2 * img_width) // 3:
+        return "right"
+    return "center"
+
+
 def draw_detections(request, stream="main"):
     """Draw the detections for this request onto the ISP output."""
     detections = last_results
@@ -101,17 +112,7 @@ def draw_detections(request, stream="main"):
         img_width = m.array.shape[1]  # Get the width of the image
 
         for detection in detections:
-            x, y, w, h = detection.box
-            object_center_x = x + w // 2  # Calculate center x of object
-
-            # Determine position category
-            if object_center_x < img_width // 3:
-                position = "Left"
-            elif object_center_x > (2 * img_width) // 3:
-                position = "Right"
-            else:
-                position = "Middle"
-
+            position = get_position(detection, img_width).capitalize()
             # Create label with object name, confidence, and position
             label = f"{labels[int(detection.category)]} ({detection.conf:.2f}) - {position}"
 
@@ -208,25 +209,36 @@ if __name__ == "__main__":
         while True:
             # Capture and parse detections
             last_results = parse_detections(picam2.capture_metadata())
-            
+        
             # Only announce if new detections exist
             if last_results:
                 for detection in last_results:
                     try:
-                        # Calculate position
-                        x, _, w, _ = detection["box"]
+                        # Extract position from the label text that draw_detections creates
+                        label_text = f"{get_labels()[int(detection.category)]}"
+                        position = None
+                    
+                        # The position is already calculated in draw_detections,
+                        # so we'll replicate that logic here for consistency
+                        x, y, w, h = detection.box
                         img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
-                        position = ("left" if x + w//2 < img_width//3 else
-                                  "right" if x + w//2 > 2*img_width//3 else "center")
-                        
+                        object_center_x = x + w // 2
+                    
+                        if object_center_x < img_width // 3:
+                            position = "left"
+                        elif object_center_x > (2 * img_width) // 3:
+                            position = "right"
+                        else:
+                            position = "center"
+                    
                         # Announce with error handling
-                        speaker.announce(f"{detection['label']} detected on the {position}")
+                        speaker.announce(f"{label_text} detected on the {position}")
                     except Exception as e:
                         print(f"Speech error: {e}")
-            
+        
             # Maintain CPU-friendly delay
             time.sleep(0.01)
-            
+        
     except KeyboardInterrupt:
         picam2.stop()
-        print("Camera stopped gracefully")
+        print("Camera stopped gracefully"
