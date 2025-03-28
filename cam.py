@@ -283,12 +283,14 @@ if __name__ == "__main__":
             range = 2
 
         #drv.sequence[0] = adafruit_drv2605.Effect(middle)
-        if(right>0)
-            GPIO.output(drv1, False)
+        if right > 0:
             GPIO.output(drv2, True)
-        elif(left>0)
+        else:
             GPIO.output(drv2, False)
+        if left > 0:
             GPIO.output(drv1, True)
+        else:
+            GPIO.output(drv1, False)
 
         # record end time
         end_time = time.time()
