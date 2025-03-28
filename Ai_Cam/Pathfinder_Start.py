@@ -245,5 +245,5 @@ if __name__ == "__main__":
         
             time.sleep(0.1)
     except KeyboardInterrupt:
-    picam2.stop()
-    print("Camera stopped gracefully")    
+        picam2.stop()
+        print("Camera stopped gracefully")    
