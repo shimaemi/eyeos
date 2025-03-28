@@ -1,5 +1,5 @@
 # Running the Code
-python imx500_object_detection_demo.py --model /usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnli>
+python Directional_Object_Detection.py --model /usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk
 #      *File name ^                    *model of the trained ai model on the imx500 sensor ^    
        python imx500_object_detection_demo.py
 
@@ -7,10 +7,8 @@ python imx500_object_detection_demo.py --model /usr/share/imx500-models/imx500_n
 
 --model /usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnli
 This specifies the model file to use for object detection.
-
 /usr/share/imx500-models/ is a directory where pre-trained AI models for the IMX500 camera are stored.
 imx500_network_ssd_mobilenetv2_fpnli is the model being used. Let's break this down:
-
 SSD (Single Shot MultiBox Detector): A deep-learning-based object detection model that can identify objects in an image.
 MobileNetV2: A lightweight neural network optimized for edge devices, making it suitable for your Raspberry Pi Zero 2 W.
 FPN (Feature Pyramid Network): Enhances detection accuracy across different object sizes.
