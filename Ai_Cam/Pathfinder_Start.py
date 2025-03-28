@@ -79,11 +79,6 @@ def parse_detections(metadata: dict):
         boxes = np.array_split(boxes, 4, axis=1)
         boxes = zip(*boxes)
 
-    last_detections = [
-        Detection(box, category, score, metadata)
-        for box, score, category in zip(boxes, scores, classes)
-        if score > threshold
-    ]
 
     labels = get_labels()
     last_detections = [
@@ -243,7 +238,7 @@ if __name__ == "__main__":
                     try:
                         # Calculate position
                         x, _, w, _ = detection["box"]
-                        img_width = picam2.config['main']['size'][0] if picam2 and picam2.config else 1280
+                        img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
                         position = ("left" if x + w//2 < img_width//3 else
                                   "right" if x + w//2 > 2*img_width//3 else "center")
                         
