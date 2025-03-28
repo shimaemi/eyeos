@@ -1,7 +1,6 @@
 # runs everything
 
 import serial # uart
-import lgpio
 import pyttsx3
 import argparse
 import sys
@@ -27,14 +26,21 @@ import RPi.GPIO as GPIO
 #drv1 = adafruit_drv2605.DRV2605(i2c)
 #drv2 = adafruit_drv2605.DRV2605(i2c)
 
-drv1 = 19
-drv2 = 20
+drv1 = 16
+drv2 = 17
 #GPIO.setup(GPIO.BCM)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(drv1, GPIO.OUT)
 GPIO.setup(drv2, GPIO.OUT)
 
+#Motors off 
+GPIO.setup(drv1, GPIO.LOW)
+GPIO.setup(drv2, GPIO.LOW)
+
 last_detections = []
+left = 0
+middle = 0
+right = 0
 
 ser = serial.Serial('/dev/serial0', 115200)
 # we define a new function that will get the data from LiDAR and publish it
@@ -121,8 +127,10 @@ def draw_detections(request, stream="main"):
             # Determine position category
             if object_center_x < img_width // 3:
                 position = "Left"
+                left = 1
             elif object_center_x > (2 * img_width) // 3:
                 position = "Right"
+                right = 1
             else:
                 position = "Middle"
                 tts = detection.category
