@@ -148,7 +148,7 @@ def get_args():
     parser.add_argument("--bbox-normalization", action=argparse.BooleanOptionalAction, help="Normalize bbox")
     parser.add_argument("--bbox-order", choices=["yx", "xy"], default="yx",
                         help="Set bbox order yx -> (y0, x0, y1, x1) xy -> (x0, y0, x1, y1)")
-    parser.add_argument("--threshold", type=float, default=0.75, help="Detection threshold")
+    parser.add_argument("--threshold", type=float, default=0.65, help="Detection threshold")
     parser.add_argument("--iou", type=float, default=0.65, help="Set iou threshold")
     parser.add_argument("--max-detections", type=int, default=10, help="Set max detections")
     parser.add_argument("--ignore-dash-labels", action=argparse.BooleanOptionalAction, help="Remove '-' labels ")
@@ -214,17 +214,33 @@ if __name__ == "__main__":
             if last_results:
                 labels = get_labels()
                 img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
+            
+                # Get all valid detections above threshold
+                valid_detections = [
+                    (labels[int(d.category)], get_position(d, img_width))
+                    for d in last_results
+                    if d.conf >= args.threshold
+                ]
+            
+                if valid_detections:
+                    # Group by position
+                    position_groups = {}
+                    for label, position in valid_detections:
+                        if position not in position_groups:
+                            position_groups[position] = []
+                        position_groups[position].append(label)
                 
-                for detection in last_results:
-                    try:
-                        label = labels[int(detection.category)]
-                        position = get_position(detection, img_width)
-                        speaker.announce_detection(label, position)
-                    except Exception as e:
-                        print(f"Speech error: {e}")
+                    # Announce each position group
+                    for position, labels in position_groups.items():
+                        if len(labels) == 1:
+                            # Single object - always announce specific label
+                            speaker.announce_detection(labels[0], position)
+                        else:
+                            # Multiple objects - announce all unique labels
+                            unique_labels = list(set(labels))  # Remove duplicates
+                            if len(unique_labels) == 1:
+                                speaker.announce_detection(unique_labels[0], position)
+                            else:
+                                speaker.announce(f"Multiple objects on the {position} including {unique_labels[0]}")
         
-            time.sleep(0.01)
-        
-    except KeyboardInterrupt:
-        picam2.stop()
-        print("Camera stopped gracefully")
+            time.sleep(0.1)
