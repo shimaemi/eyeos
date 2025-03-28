@@ -3,7 +3,7 @@ from tf_luna import TFLuna
 
 def main():
     # Initialize the TFLuna sensor
-    sensor = TFLuna(port='/dev/ttyAMA0', baudrate=115200, pwm_pin=18)
+    sensor = TFLuna(port='/dev/serial0', baudrate=115200, pwm_pin=18)
     
     try:
         # Set the sample rate
