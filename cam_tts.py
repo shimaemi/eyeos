@@ -1,10 +1,10 @@
 # runs camera, lidar, tts
 
 import serial # uart
-import pyttsx3
 import argparse
 import sys
 from functools import lru_cache
+import subprocess
 
 import cv2
 import numpy as np
@@ -20,8 +20,6 @@ import time
 
 last_detections = []
 
-ser = serial.Serial('/dev/serial0', 115200)
-# we define a new function that will get the data from LiDAR and publish it
 sample = 100 # set sample rate 5 / sec
 t = 1 / sample # period
 range = 0
@@ -40,6 +38,24 @@ class Detection:
         self.category = category
         self.conf = conf
         self.box = imx500.convert_inference_coords(coords, metadata, picam2)
+
+def espeak(text):
+    """
+    Uses espeak with settings for a more natural voice.
+    Args:
+        text (str): Text to speak.
+    """
+    # Command with parameters for better sound
+    cmd = [
+        'espeak',
+        '-v', 'en-us',      # American English voice
+        '-s', '145',        # Slightly slower speed (145 WPM)
+        '-p', '50',         # Medium pitch (50/99)
+        '-g', '8',          # Word gap (pause between words, 8ms)
+        '-k', '20',         # Emphasis on capital letters (for names/important words)
+        text
+    ]
+    subprocess.Popen(cmd)  # Run asynchronously (won't block code)
 
 def parse_detections(metadata: dict):
     """Parse the output tensor into a number of detected objects, scaled to the ISP output."""
@@ -200,7 +216,6 @@ if __name__ == "__main__":
     # Set the sample rate
     sensor.set_sample(sample)  # Set to 100 Hz or your desired sample rate
     t = self.get_period()
-    prev = 0
 
     picam2 = Picamera2(imx500.camera_num)
     config = picam2.create_preview_configuration(controls={"FrameRate": intrinsics.inference_rate}, buffer_count=12)
@@ -210,11 +225,6 @@ if __name__ == "__main__":
 
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
-
-    engine = pyttsx3.init() # object creation
-    engine.setProperty('rate', 125)     # setting up new voice rate
-    engine.setProperty('volume',1.0)    # setting up volume level  between 0 and 1
-    engine.setProperty('voice', voices[1].id)   #changing index, changes voices. 1 for female
 
     prev = 0
     # record start time
@@ -244,8 +254,7 @@ if __name__ == "__main__":
                 ser.reset_input_buffer()
 
         if range == 1:
-            engine.say(str(tts))
-            engine.runAndWait()
+            espeak(tts)
             tts = ""
             range = 2
 
