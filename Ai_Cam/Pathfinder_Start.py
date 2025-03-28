@@ -40,16 +40,9 @@ class Detection:
 
 
 def parse_detections(metadata: dict):
-    """Converts raw inference output into Detection objects.
-    
-    Args:
-        metadata: Dictionary containing inference results
-        
-    Returns:
-        List of Detection objects that meet confidence threshold
-    """
+    """Parse the output tensor into a number of detected objects, scaled to the ISP output."""
     global last_detections
-
+    
     bbox_normalization = intrinsics.bbox_normalization
     bbox_order = intrinsics.bbox_order
     threshold = args.threshold
@@ -58,10 +51,8 @@ def parse_detections(metadata: dict):
 
     np_outputs = imx500.get_outputs(metadata, add_batch=True)
     input_w, input_h = imx500.get_input_size()
-
     if np_outputs is None:
         return last_detections
-    
     if intrinsics.postprocess == "nanodet":
         boxes, scores, classes = \
             postprocess_nanodet_detection(outputs=np_outputs[0], conf=threshold, iou_thres=iou,
@@ -70,7 +61,6 @@ def parse_detections(metadata: dict):
         boxes = scale_boxes(boxes, 1, 1, input_h, input_w, False, False)
     else:
         boxes, scores, classes = np_outputs[0][0], np_outputs[1][0], np_outputs[2][0]
-
         if bbox_normalization:
             boxes = boxes / input_h
 
@@ -79,18 +69,11 @@ def parse_detections(metadata: dict):
         boxes = np.array_split(boxes, 4, axis=1)
         boxes = zip(*boxes)
 
-
-    labels = get_labels()
     last_detections = [
-        {
-            "label": labels[int(detection.category)],
-            "box": detection.box,
-            "conf": detection.conf
-        }
-        for detection in last_detections
-        if detection.conf > args.threshold
+        Detection(box, category, score, metadata)
+        for box, score, category in zip(boxes, scores, classes)
+        if score > threshold
     ]
-
     return last_detections
 
 
@@ -108,13 +91,7 @@ def get_labels():
 
 
 def draw_detections(request, stream="main"):
-    """Draws bounding boxes and labels on the camera feed.
-    
-    Args:
-        request: Camera frame request object
-        stream: Stream name to draw on (default 'main')
-    """
-    global last_results
+    """Draw the detections for this request onto the ISP output."""
     detections = last_results
     if detections is None:
         return
