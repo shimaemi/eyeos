@@ -114,7 +114,7 @@ def draw_detections(request, stream="main"):
         for detection in detections:
             x, y, w, h = detection.box
             position = get_position(detection, img_width).capitalize()
-            
+
             # Create label with object name, confidence, and position
             label = f"{labels[int(detection.category)]} ({detection.conf:.2f}) - {position}"
 
@@ -148,7 +148,7 @@ def get_args():
     parser.add_argument("--bbox-normalization", action=argparse.BooleanOptionalAction, help="Normalize bbox")
     parser.add_argument("--bbox-order", choices=["yx", "xy"], default="yx",
                         help="Set bbox order yx -> (y0, x0, y1, x1) xy -> (x0, y0, x1, y1)")
-    parser.add_argument("--threshold", type=float, default=0.55, help="Detection threshold")
+    parser.add_argument("--threshold", type=float, default=0.75, help="Detection threshold")
     parser.add_argument("--iou", type=float, default=0.65, help="Set iou threshold")
     parser.add_argument("--max-detections", type=int, default=10, help="Set max detections")
     parser.add_argument("--ignore-dash-labels", action=argparse.BooleanOptionalAction, help="Remove '-' labels ")
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                     try:
                         label = labels[int(detection.category)]
                         position = get_position(detection, img_width)
-                        speaker.announce(f"{label} detected on the {position}")
+                        speaker.announce_detection(label, position)
                     except Exception as e:
                         print(f"Speech error: {e}")
         
