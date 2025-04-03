@@ -1,14 +1,14 @@
-# runs everything, announces object in middle
+# runs everything, announces any object
 
 import serial # uart
 import argparse
 import sys
+import cv2
+import time
+import numpy as np
+
 from functools import lru_cache
 from speech_announcer import SpeechAnnouncer
-
-import cv2
-import numpy as np
-from collections import defaultdict
 
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
@@ -16,15 +16,18 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
                                       postprocess_nanodet_detection)
 
 from tf_luna import TFLuna
-import time
-#import board
-#import busio
 import RPi.GPIO as GPIO
-#import adafruit_drv2605
 
-#i2c = busio.I2C(board.SCL, board.SDA)
-#drv1 = adafruit_drv2605.DRV2605(i2c)
-#drv2 = adafruit_drv2605.DRV2605(i2c)
+# Initialize the SpeechAnnouncer class
+speaker = SpeechAnnouncer()
+
+# Global variables
+last_detections = []
+last_results = None
+picam2 = None
+imx500 = None
+intrinsics = None
+args = None
 
 drv1 = 16
 drv2 = 17
@@ -32,7 +35,6 @@ drv2 = 17
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(drv1, GPIO.OUT)
 GPIO.setup(drv2, GPIO.OUT)
-
 #Motors off 
 GPIO.setup(drv1, GPIO.LOW)
 GPIO.setup(drv2, GPIO.LOW)
@@ -45,27 +47,28 @@ right = 0
 sample = 100 # set sample rate 5 / sec
 t = 1 / sample # period
 range = 0
-
-# 30 fps by default
-# frames = 30
-IMAGE_WIDTH = 320
-IMAGE_HEIGHT = 240
-fps = 0
 tts = ""
 
-# Initialize the SpeechAnnouncer class
-speaker = SpeechAnnouncer()
 
 class Detection:
     def __init__(self, coords, category, conf, metadata):
-        """Create a Detection object, recording the bounding box, category and confidence."""
+        """Stores detection information including bounding box coordinates.
+        
+        Args:
+            coords: Raw coordinates from inference output
+            category: Detected object class ID
+            conf: Confidence score (0-1)
+            metadata: Camera metadata for coordinate conversion
+        """
         self.category = category
         self.conf = conf
         self.box = imx500.convert_inference_coords(coords, metadata, picam2)
 
+
 def parse_detections(metadata: dict):
     """Parse the output tensor into a number of detected objects, scaled to the ISP output."""
     global last_detections
+    
     bbox_normalization = intrinsics.bbox_normalization
     bbox_order = intrinsics.bbox_order
     threshold = args.threshold
@@ -102,11 +105,29 @@ def parse_detections(metadata: dict):
 
 @lru_cache
 def get_labels():
+    """Cached label loader that filters out empty/dash labels.
+    
+    Returns:
+        List of label strings corresponding to class IDs
+    """
     labels = intrinsics.labels
-
     if intrinsics.ignore_dash_labels:
         labels = [label for label in labels if label and label != "-"]
     return labels
+
+
+def get_position(detection, img_width):
+    """Helper function to determine position (left/center/right) of a detection."""
+    x, y, w, h = detection.box
+    object_center_x = x + w // 2
+    if object_center_x < img_width // 3:
+        left = 1
+        return "left"
+    elif object_center_x > (2 * img_width) // 3:
+        right = 1
+        return "right"
+    middle = 1
+    return "center"
 
 
 def draw_detections(request, stream="main"):
@@ -116,6 +137,8 @@ def draw_detections(request, stream="main"):
     if detections is None:
         tts = "wall"
         return
+    else:
+        tts = ""
     labels = get_labels()
     
     with MappedArray(request, stream) as m:
@@ -123,24 +146,8 @@ def draw_detections(request, stream="main"):
 
         for detection in detections:
             x, y, w, h = detection.box
-            object_center_x = x + w // 2  # Calculate center x of object
-
-            # Determine position category
-            if object_center_x < img_width // 3:
-                position = "Left"
-                left = 1
-            elif object_center_x > (2 * img_width) // 3:
-                position = "Right"
-                right = 1
-            else:
-                position = "Middle"
-                tts = labels[int(detection.category)]
-
-            # Draw the FPS counter
-            fps_text = 'FPS = {:.1f}'.format(fps)
-            text_location = (24, 20)
-            cv2.putText(m.array, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
-
+            position = get_position(detection, img_width).capitalize()
+            
             # Create label with object name, confidence, and position
             label = f"{labels[int(detection.category)]} ({detection.conf:.2f}) - {position}"
 
@@ -174,7 +181,7 @@ def get_args():
     parser.add_argument("--bbox-normalization", action=argparse.BooleanOptionalAction, help="Normalize bbox")
     parser.add_argument("--bbox-order", choices=["yx", "xy"], default="yx",
                         help="Set bbox order yx -> (y0, x0, y1, x1) xy -> (x0, y0, x1, y1)")
-    parser.add_argument("--threshold", type=float, default=0.55, help="Detection threshold")
+    parser.add_argument("--threshold", type=float, default=0.65, help="Detection threshold")
     parser.add_argument("--iou", type=float, default=0.65, help="Set iou threshold")
     parser.add_argument("--max-detections", type=int, default=10, help="Set max detections")
     parser.add_argument("--ignore-dash-labels", action=argparse.BooleanOptionalAction, help="Remove '-' labels ")
@@ -195,6 +202,7 @@ if __name__ == "__main__":
     # This must be called before instantiation of Picamera2
     imx500 = IMX500(args.model)
     intrinsics = imx500.network_intrinsics
+    
     if not intrinsics:
         intrinsics = NetworkIntrinsics()
         intrinsics.task = "object detection"
@@ -220,12 +228,6 @@ if __name__ == "__main__":
         print(intrinsics)
         exit()
 
-    # Initialize the TFLuna sensor
-    sensor = TFLuna(port='/dev/ttyAMA0', baudrate=115200, pwm_pin=18)
-    # Set the sample rate
-    sensor.set_sample(sample)  # Set to 100 Hz or your desired sample rate
-    t = self.get_period()
-
     picam2 = Picamera2(imx500.camera_num)
     config = picam2.create_preview_configuration(controls={"FrameRate": intrinsics.inference_rate}, buffer_count=12)
 
@@ -235,57 +237,71 @@ if __name__ == "__main__":
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
 
+    # Initialize the TFLuna sensor
+    sensor = TFLuna(port='/dev/ttyAMA0', baudrate=115200, pwm_pin=18)
+    # Set the sample rate
+    sensor.set_sample(sample)  # Set to 100 Hz or your desired sample rate
+    t = self.get_period()
     prev = 0
-    # record start time
-    start_time = time.time()
 
     last_results = None
     picam2.pre_callback = draw_detections
-    while True:
-        last_results = parse_detections(picam2.capture_metadata())
 
-        counter = self.ser.in_waiting  # count the number of bytes of the serial port
-        if counter > 8:
-            bytes_serial = self.ser.read(9)
-            self.ser.reset_input_buffer()
-    
-            if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
-                curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
-                if curr != prev:
-                    ttc = curr * t / (prev - curr)
-                if ttc <= 5 and ttc > 0 and range < 1: # send an alert every time we enter the danger zone
-                    range = 1
-                elif ttc > 5 and range > 0:
-                    range = 0
-                else:
-                    print("TTC:"+ str(ttc) + "sec")
-                prev = curr 
-                ser.reset_input_buffer()
+    try:
+        while True:
+            last_results = parse_detections(picam2.capture_metadata())
 
-        if range == 1:
-            speaker.announce(tts)
-            tts = ""
-            range = 2
+            counter = self.ser.in_waiting  # count the number of bytes of the serial port
+            if counter > 8:
+                bytes_serial = self.ser.read(9)
+                self.ser.reset_input_buffer()
+        
+                if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # python3
+                    curr = bytes_serial[2] + bytes_serial[3]*256 # centimeters
+                    if curr != prev:
+                        ttc = curr * t / (prev - curr)
+                    if ttc <= 5 and ttc > 0 and range < 1: # send an alert every time we enter the danger zone
+                        range = 1
+                    elif ttc > 5 and range > 0:
+                        range = 0
+                    else:
+                        print("TTC:"+ str(ttc) + "sec")
+                    prev = curr 
+                    ser.reset_input_buffer()
 
-        #drv.sequence[0] = adafruit_drv2605.Effect(middle)
-        if right > 0:
-            GPIO.output(drv2, True)
-        else:
-            GPIO.output(drv2, False)
-        if left > 0:
-            GPIO.output(drv1, True)
-        else:
-            GPIO.output(drv1, False)
+            if range == 1:
+                speaker.announce(tts)
+                tts = ""
+                range = 2
 
-        # record end time
-        end_time = time.time()
-        # calculate FPS
-        seconds = end_time - start_time
-        fps = 1.0 / seconds
+            if last_results:
+                labels = get_labels()
+                img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
+                
+                for detection in last_results:
+                    try:
+                        label = labels[int(detection.category)]
+                        position = get_position(detection, img_width)
+                        speaker.announce(f"{label} on {position}")
+                    except Exception as e:
+                        print(f"Speech error: {e}")
 
-if ser != None:
-    ser.close()
-sensor.close()
-camera.close()
-cv2.destroyAllWindows()
-print("program interrupted by the user")
+            #drv.sequence[0] = adafruit_drv2605.Effect(middle)
+            if right > 0:
+                GPIO.output(drv2, True)
+            else:
+                GPIO.output(drv2, False)
+            if left > 0:
+                GPIO.output(drv1, True)
+            else:
+                GPIO.output(drv1, False)
+        
+            time.sleep(0.01)
+        
+    except KeyboardInterrupt:
+        picam2.stop()
+        if ser != None:
+            ser.close()
+        sensor.close()
+        cv2.destroyAllWindows()
+        print("Camera stopped gracefully")
