@@ -1,4 +1,4 @@
-import RPI.GPIO as GPIO
+import RPi.GPIO as GPIO
 import time
 
 # GPIO pins for haptic motors
@@ -10,26 +10,30 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(17, GPIO.OUT)  # Pin for haptic left 
 GPIO.setup(18, GPIO.OUT)  # Pin for haptic right
 
+# PWM frequency and duty cycle
+left_pwm = GPIO.PWM(Left_Haptic_Pin, 1000)  # 1kHz frequency
+right_pwm = GPIO.PWM(Right_Haptic_Pin, 1000)  # 1kHz frequency
+
 # Starting mode off
-GPIO.output(Left_Haptic_Pin, GPIO.LOW)  # Set pin to low (off)
-GPIO.output(Right_Haptic_Pin, GPIO.LOW)  # Set pin to low (off)
+left_pwm.start(0)  # Start PWM with 0% duty cycle (off)
+right_pwm.start(0)  # Start PWM with 0% duty cycle (off)
 
 try:
     while True:
         # Activate left haptic motor
-        GPIO.output(Left_Haptic_Pin, GPIO.HIGH)
+        left_pwm.ChangeDutyCycle(100)  # Set duty cycle to 100%
         time.sleep(0.5)  # Keep it on for 0.5 seconds
-        GPIO.output(Left_Haptic_Pin, GPIO.LOW)
+        left_pwm.ChangeDutyCycle(0)
         time.sleep(0.5)
 
         # Activate right haptic motor
-        GPIO.output(Right_Haptic_Pin, GPIO.HIGH)
+        right_pwm.ChangeDutyCycle(75)
         time.sleep(0.5)
-        GPIO.output(Right_Haptic_Pin, GPIO.LOW)
+        right_pwm.ChangeDutyCycle(0)
         time.sleep(0.5)
         
 except KeyboardInterrupt:
     print("Exiting...")
-    GPIO.output(Left_Haptic_Pin, GPIO.LOW)  # Set pin to low (off)
-    GPIO.output(Right_Haptic_Pin, GPIO.LOW)  # Set pin to low (off)
+    left_pwm.stop()  # Stop PWM for left haptic motor
+    right_pwm.stop() # Stop PWM for right haptic motor
     GPIO.cleanup()  # Clean up GPIO settings
