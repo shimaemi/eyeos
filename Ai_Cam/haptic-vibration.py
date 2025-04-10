@@ -18,19 +18,35 @@ right_pwm = GPIO.PWM(Right_Haptic_Pin, 1000)  # 1kHz frequency
 left_pwm.start(0)  # Start PWM with 0% duty cycle (off)
 right_pwm.start(0)  # Start PWM with 0% duty cycle (off)
 
+
+# Function to activate haptic motors
+def activate_haptic_motors(left_intensity, right_intensity):
+    """
+    Activate haptic motors with specified intensity.
+    
+    Args:
+        left_intensity (int): Intensity for left motor (0-100).
+        right_intensity (int): Intensity for right motor (0-100).
+    """
+    left_pwm.ChangeDutyCycle(left_intensity)  # Set duty cycle for left motor
+    right_pwm.ChangeDutyCycle(right_intensity)  # Set duty cycle for right motor
+    time.sleep(0.5)  # Keep it on for 0.5 seconds
+
+def deactivate_haptic_motors():
+    """
+    Deactivate haptic motors.
+    """
+    left_pwm.ChangeDutyCycle(0)  # Turn off left motor
+    right_pwm.ChangeDutyCycle(0)  # Turn off right motor
+
 try:
     while True:
-        # Activate left haptic motor
-        left_pwm.ChangeDutyCycle(100)  # Set duty cycle to 100%
-        time.sleep(0.5)  # Keep it on for 0.5 seconds
-        left_pwm.ChangeDutyCycle(0)
-        time.sleep(0.5)
-
-        # Activate right haptic motor
-        right_pwm.ChangeDutyCycle(75)
-        time.sleep(0.5)
-        right_pwm.ChangeDutyCycle(0)
-        time.sleep(0.5)
+        # Example usage: Activate left motor at 50% intensity and right motor at 75% intensity
+        activate_haptic_motors(50, 75)
+        time.sleep(1)  # Wait for 1 second before next activation
+        # Deactivate motors 
+        deactivate_haptic_motors()
+        time.sleep(1)  # Wait for 1 second before next activation
         
 except KeyboardInterrupt:
     print("Exiting...")
