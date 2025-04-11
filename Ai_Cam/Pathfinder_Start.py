@@ -96,7 +96,7 @@ def get_position(detection, img_width):
         return "left"
     elif object_center_x > (2 * img_width) // 3:
         return "right"
-    return "center"
+    return "ahead"
 
 
 def draw_detections(request, stream="main"):
@@ -218,7 +218,7 @@ if __name__ == "__main__":
                         label = labels[int(detection.category)]
                         position = get_position(detection, img_width)
 
-                        speaker.announce(f"{label} on the {position}")
+                        speaker.announce(f"{label}, {position}")
 
                         if position == "left":
                             haptic.activate_left(intensity=100, duration=0.3)
