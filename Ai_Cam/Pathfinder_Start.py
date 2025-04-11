@@ -24,6 +24,8 @@ picam2 = None
 imx500 = None
 intrinsics = None
 args = None
+last_haptic_time = ("left":0, "right": 0)
+Haptic_Cooldown = 2  # seconds
 
 
 class Detection:
@@ -212,6 +214,7 @@ if __name__ == "__main__":
     try:
         while True:
             last_results = parse_detections(picam2.capture_metadata())
+            current_time = time.time()
         
             if last_results:
                 labels = get_labels()
@@ -221,11 +224,19 @@ if __name__ == "__main__":
                     try:
                         label = labels[int(detection.category)]
                         position = get_position(detection, img_width)
-                        speaker.announce(f"{label} detected on the {position}")
-                        if position == "left":
-                            haptic.activate_left(intensity=100, duration=0.5)
-                        elif position == "right":
-                            haptic.activate_right(intensity=100, duration=0.5)
+
+                        # Announce if not in cooldown
+                        if current_time - last_haptic_time(position,0) > Haptic_Cooldown:
+                            speaker.announce(f"{label} detected on the {position}")
+
+                            # Activate haptic feedback based on position
+                            if position == "left":
+                                haptic.activate_left(intensity=80, duration=0.3)
+                                last_haptic_time["left"] = current_time
+                            elif position == "right":
+                                haptic.activate_right(intensity=80, duration=0.3)
+                                last_haptic_time["right"] = current_time
+        
                     except Exception as e:
                         print(f"Speech error: {e}")
         
