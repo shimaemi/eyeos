@@ -7,15 +7,17 @@ import numpy as np
 from functools import lru_cache
 from speech_announcer import SpeechAnnouncer
 from haptic_vibration import HapticController
+from lidar_sensor import TFLuna
 
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
 from picamera2.devices.imx500 import (NetworkIntrinsics,
                                       postprocess_nanodet_detection)
 
-# Initialize the SpeechAnnouncer class
+# Initialize the other classes
 speaker = SpeechAnnouncer()
 haptic = HapticController(left_pin=17, right_pin=18)
+lidar_sensor = TFLuna()
 
 # Global variables
 last_detections = []
@@ -24,6 +26,22 @@ picam2 = None
 imx500 = None
 intrinsics = None
 args = None
+
+
+def check_lidar_proximity():
+    """Check lidar distance and return it if valid"""
+    distance = lidar_sensor.read_distance()
+    if distance is not None:
+        # Convert to meters or any other preferred unit
+        distance_in_meters = lidar_sensor.convert_distance(distance, 'm')
+        return distance_in_meters
+    return None
+
+def detect_wall_using_lidar(lidar_distance, threshold=0.5):
+    """Detect wall using lidar distance"""
+    if lidar_distance is not None and lidar_distance < threshold:  # Threshold is 0.5 meters here
+        return True
+    return False
 
 
 class Detection:
@@ -199,18 +217,27 @@ if __name__ == "__main__":
 
     try:
         while True:
+            # Capture detections and lidar distance
             last_results = parse_detections(picam2.capture_metadata())
-        
+            lidar_distance = check_lidar_proximity()
+
+            # If no object detected by camera and lidar reads something close
+            if not last_results and detect_wall_using_lidar(lidar_distance):
+                print(f"Wall detected using lidar! Distance: {lidar_distance:.2f} meters")
+                speaker.announce("Wall detected ahead!")
+                haptic.activate_left(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
+
             if last_results:
                 labels = get_labels()
                 img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
                 img_height = picam2.camera_configuration()['main']['size'][1] if picam2 else 720
-                
+            
                 for detection in last_results:
                     try:
                         label = labels[int(detection.category)]
                         position, proximity = get_position_and_proximity(detection, img_width, img_height)
 
+                        # Announce object detections
                         if proximity:  # Announce only if proximity is "incoming", "close", or "very close"
                             speaker.announce(f"{label} {proximity} {position}")
 
@@ -221,7 +248,7 @@ if __name__ == "__main__":
 
                     except Exception as e:
                         print(f"Speech error: {e}")
-        
+
             time.sleep(0.01)
         
     except KeyboardInterrupt:
