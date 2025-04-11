@@ -226,21 +226,13 @@ if __name__ == "__main__":
             # If no object detected by camera and lidar reads something close
             if not last_results and detect_wall_using_lidar(lidar_distance):
                 print(f"Wall detected using lidar! Distance: {lidar_distance:.2f} meters")
-                speaker.announce("Wall detected ahead!")
+                speaker.announce("Wall detected ahead")
                 haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
 
             if last_results:
                 labels = get_labels()
                 img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
                 img_height = picam2.camera_configuration()['main']['size'][1] if picam2 else 720
-            
-            else:
-                distance = lidar_sensor.read_distance()
-                if distance is not None and distance < wall_distance_threshold_cm:
-                    speaker.announce("Wall detected ahead")
-                    haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
-                    haptic.activate_right(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
-
             
                 for detection in last_results:
                     try:
@@ -257,7 +249,14 @@ if __name__ == "__main__":
                             haptic.activate_right(intensity=100, duration=0.3)
 
                     except Exception as e:
-                        print(f"Speech error: {e}")
+                        print(f"Speech error: {e}")                            
+            else:
+                distance = lidar_sensor.read_distance()
+                if distance is not None and distance < wall_distance_threshold_cm:
+                    speaker.announce("Wall detected ahead")
+                    haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
+                    haptic.activate_right(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
+
 
             time.sleep(0.01)
         
