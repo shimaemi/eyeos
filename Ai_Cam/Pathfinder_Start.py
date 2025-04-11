@@ -81,11 +81,7 @@ def parse_detections(metadata: dict):
 
 @lru_cache
 def get_labels():
-    """Cached label loader that filters out empty/dash labels.
-    
-    Returns:
-        List of label strings corresponding to class IDs
-    """
+    """Cached label loader that filters out empty/dash labels."""
     labels = intrinsics.labels
     if intrinsics.ignore_dash_labels:
         labels = [label for label in labels if label and label != "-"]
