@@ -3,7 +3,7 @@ import time
 
 
 # Example usage of the updated TFLuna class
-lidar_sensor = TFLuna(port='/dev/ttyserial0')  # Replace with your actual serial port
+lidar_sensor = TFLuna('/dev/serial0', 115200)  # Replace with your actual serial port
 
 # Read and convert distance
 distance = lidar_sensor.read_distance()
