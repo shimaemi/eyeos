@@ -227,7 +227,7 @@ if __name__ == "__main__":
             if not last_results and detect_wall_using_lidar(lidar_distance):
                 print(f"Wall detected using lidar! Distance: {lidar_distance:.2f} meters")
                 speaker.announce("Wall detected ahead!")
-                haptic.activate_left(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
+                haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
 
             if last_results:
                 labels = get_labels()
@@ -238,8 +238,8 @@ if __name__ == "__main__":
                 distance = lidar_sensor.read_distance()
                 if distance is not None and distance < wall_distance_threshold_cm:
                     speaker.announce("Wall detected ahead")
-                    haptic.activate_left(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
-                    haptic.activate_right(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
+                    haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
+                    haptic.activate_right(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
 
             
                 for detection in last_results:
@@ -268,6 +268,5 @@ if __name__ == "__main__":
     finally:
         picam2.close()
         haptic.cleanup()
-        speaker.cleanup()
         lidar_sensor.close()
         print("Cleanup completed")
