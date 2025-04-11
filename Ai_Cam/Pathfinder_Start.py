@@ -24,7 +24,7 @@ picam2 = None
 imx500 = None
 intrinsics = None
 args = None
-last_haptic_time = ("left":0, "right": 0)
+last_haptic_time = {"left":0, "right": 0}
 Haptic_Cooldown = 2  # seconds
 
 
