@@ -212,7 +212,7 @@ if __name__ == "__main__":
             if last_results:
                 labels = get_labels()
                 img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
-                
+
                 for detection in last_results:
                     try:
                         label = labels[int(detection.category)]

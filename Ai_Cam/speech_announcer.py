@@ -3,7 +3,6 @@ from collections import deque
 import time
 from threading import Lock
 
-
 class SpeechAnnouncer:
     def __init__(self):
         """
@@ -22,6 +21,8 @@ class SpeechAnnouncer:
         self.queue = deque()
         self.last_queue_time = 0
         self.queue_interval = 0.5  # Seconds between queued messages
+
+        self.last_announcement = None  # Tracks the last spoken announcement
 
     def set_voice(self, voice):
         self.voice = voice
@@ -72,10 +73,12 @@ class SpeechAnnouncer:
             return f"{label} {urgency} on your {position}"
 
     def announce(self, text):
-        """Adds a phrase to the queue if not on cooldown"""
+        """Adds a phrase to the queue if not on cooldown and if it's not a duplicate"""
         with self.lock:
-            if self.can_speak(text):
-                self.queue.append(text)
+            if self.last_announcement != text:  # Check if the announcement is different
+                if self.can_speak(text):
+                    self.queue.append(text)
+                    self.last_announcement = text  # Update the last announcement
 
     def speak_pending(self):
         """Should be called periodically to play queued announcements"""
