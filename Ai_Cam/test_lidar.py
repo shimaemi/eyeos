@@ -1,3 +1,7 @@
+from lidar_sensor import TFLuna
+import time
+
+
 # Example usage of the updated TFLuna class
 lidar_sensor = TFLuna(port='/dev/ttyserial0')  # Replace with your actual serial port
 
