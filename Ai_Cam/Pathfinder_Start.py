@@ -229,7 +229,9 @@ if __name__ == "__main__":
 
                     except Exception as e:
                         print(f"Speech error: {e}")
-        
+            
+            speaker.speak_pending()
+
             time.sleep(0.01)
         
     except KeyboardInterrupt:
