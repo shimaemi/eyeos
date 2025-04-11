@@ -1,28 +1,16 @@
-import subprocess
-from collections import deque
-import time
-from threading import Lock
-
 class SpeechAnnouncer:
     def __init__(self):
-        """
-        TTS announcer optimized for natural speech using espeak.
-        Designed for vision assistance with clarity, context, and safety.
-        """
         self.voice = "en-us+m3"
         self.speed = 135
         self.pitch = 45
         self.gap = 10
         self.capital_emphasis = 20
-        self.cooldown = 1.5
-
+        self.cooldown = 1.5  # Time in seconds before the same phrase can be spoken again
         self.last_spoken = {}  # Tracks last time each phrase was spoken
         self.lock = Lock()
         self.queue = deque()
         self.last_queue_time = 0
         self.queue_interval = 0.5  # Seconds between queued messages
-
-        self.last_announcement = None  # Tracks the last spoken announcement
 
     def set_voice(self, voice):
         self.voice = voice
@@ -73,12 +61,10 @@ class SpeechAnnouncer:
             return f"{label} {urgency} on your {position}"
 
     def announce(self, text):
-        """Adds a phrase to the queue if not on cooldown and if it's not a duplicate"""
+        """Adds a phrase to the queue if not on cooldown"""
         with self.lock:
-            if self.last_announcement != text:  # Check if the announcement is different
-                if self.can_speak(text):
-                    self.queue.append(text)
-                    self.last_announcement = text  # Update the last announcement
+            if self.can_speak(text):
+                self.queue.append(text)
 
     def speak_pending(self):
         """Should be called periodically to play queued announcements"""
