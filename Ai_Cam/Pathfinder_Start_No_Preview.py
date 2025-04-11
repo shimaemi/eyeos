@@ -209,7 +209,7 @@ if __name__ == "__main__":
     config = picam2.create_preview_configuration(controls={"FrameRate": intrinsics.inference_rate}, buffer_count=12)
 
     imx500.show_network_fw_progress_bar()
-    picam2.start(config, show_preview=True)
+    picam2.start(config, show_preview=False)
 
     if intrinsics.preserve_aspect_ratio:
         imx500.set_auto_aspect_ratio()
