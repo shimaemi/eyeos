@@ -26,6 +26,8 @@ picam2 = None
 imx500 = None
 intrinsics = None
 args = None
+wall_distance_threshold_cm = 100  
+
 
 
 def check_lidar_proximity():
@@ -232,6 +234,14 @@ if __name__ == "__main__":
                 img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
                 img_height = picam2.camera_configuration()['main']['size'][1] if picam2 else 720
             
+            else:
+                distance = lidar_sensor.read_distance()
+                if distance is not None and distance < wall_distance_threshold_cm:
+                    speaker.announce("Wall detected ahead!")
+                    haptic.activate_left(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
+                    haptic.activate_right(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
+
+            
                 for detection in last_results:
                     try:
                         label = labels[int(detection.category)]
@@ -258,4 +268,6 @@ if __name__ == "__main__":
     finally:
         picam2.close()
         haptic.cleanup()
+        speaker.cleanup()
+        lidar_sensor.close()
         print("Cleanup completed")

@@ -1,15 +1,11 @@
 # lidar_sensor.py
 import serial  # type: ignore
-import lgpio
 import time
 
 class TFLuna:
-    def __init__(self, baudrate=115200, pwm_pin=18):
+    def __init__(self, baudrate=115200):
         # Initialize the sensor with the default serial port '/dev/serial0'
         self.ser = serial.Serial('/dev/serial0', baudrate, timeout=0)  # Default port set here
-        self.pwm_pin = pwm_pin
-        self.gpio = lgpio.gpiochip_open(0)
-        lgpio.gpio_claim_output(self.gpio, self.pwm_pin)
 
     def read_distance(self):
         """Read the distance from the TF Luna sensor"""
