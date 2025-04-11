@@ -18,7 +18,7 @@ class HapticController:
         self.left_pwm.start(0)
         self.right_pwm.start(0)
         # Cooldown Tracking
-        self.last_activation_time = 0
+        self.last_activation = {"left": 0, "right": 0}
         self.cooldown = 1.5
     
     def activate_left(self, intensity=100, duration=0.3):
