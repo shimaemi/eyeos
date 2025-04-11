@@ -6,6 +6,7 @@ import numpy as np
 
 from functools import lru_cache
 from speech_announcer import SpeechAnnouncer
+from haptic_vibration import HapticController
 
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
@@ -14,6 +15,7 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
 
 # Initialize the SpeechAnnouncer class
 speaker = SpeechAnnouncer()
+haptic = HapticController(left_pin=17, right_pin=18)
 
 # Global variables
 last_detections = []
@@ -220,6 +222,10 @@ if __name__ == "__main__":
                         label = labels[int(detection.category)]
                         position = get_position(detection, img_width)
                         speaker.announce(f"{label} detected on the {position}")
+                        if position == "left":
+                            haptic.activate_left(intensity=100, duration=0.5)
+                        elif position == "right":
+                            haptic.activate_right(intensity=100, duration=0.5)
                     except Exception as e:
                         print(f"Speech error: {e}")
         
@@ -227,4 +233,9 @@ if __name__ == "__main__":
         
     except KeyboardInterrupt:
         picam2.stop()
-        print("Camera stopped gracefully")
+        print("Stopping the program")
+
+    finally:
+        picam2.close()
+        haptic.cleanup()
+        print("Cleanup completed")

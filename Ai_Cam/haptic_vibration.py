@@ -1,53 +1,46 @@
 import RPi.GPIO as GPIO
 import time
 
-# GPIO pins for haptic motors
-Left_Haptic_Pin = 17  # GPIO pin for left haptic motor`
-Right_Haptic_Pin = 18  # GPIO pin for right haptic motor`
-
-# Initialize GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.OUT)  # Pin for haptic left 
-GPIO.setup(18, GPIO.OUT)  # Pin for haptic right
-
-# PWM frequency and duty cycle
-left_pwm = GPIO.PWM(Left_Haptic_Pin, 1000)  # 1kHz frequency
-right_pwm = GPIO.PWM(Right_Haptic_Pin, 1000)  # 1kHz frequency
-
-# Starting mode off
-left_pwm.start(0)  # Start PWM with 0% duty cycle (off)
-right_pwm.start(0)  # Start PWM with 0% duty cycle (off)
-
-
-# Function to activate haptic motors
-def activate_haptic_left(left_intensity):
-    left_pwm.ChangeDutyCycle(left_intensity)  # Set duty cycle for left motor
-    time.sleep(0.5)  # Keep it on for 0.5 seconds
-
-def activate_haptic_right(right_intensity):
-    right_pwm.ChangeDutyCycle(right_intensity)  # Set duty cycle for right motor
-    time.sleep(0.5)  # Keep it on for 0.5 seconds
-
-def deactivate_haptic_left():
-    left_pwm.ChangeDutyCycle(0)  # Turn off left motor
-
-def deactivate_haptic_right():
-    right_pwm.ChangeDutyCycle(0)  # Turn off right motor
-
-try:
-    while True:
-        # Example usage: Activate left motor at 50% intensity and right motor at 75% intensity
-        activate_haptic_left(100)
-        time.sleep(1)
-        deactivate_haptic_left()
-        time.sleep(1)
-        activate_haptic_right(100)
-        time.sleep(1)
-        deactivate_haptic_right()
-        time.sleep(1)
+class HapticController:
+    def __init__(self, left_pin=17, right_pin=18, pwm_frequency=1000):
+        """Initialize the haptic controller with GPIO pins and PWM settings."""
+        self.Left_Haptic_Pin = left_pin
+        self.Right_Haptic_Pin = right_pin
+        self.PWM_Frequency = pwm_frequency
         
-except KeyboardInterrupt:
-    print("Exiting...")
-    left_pwm.stop()  # Stop PWM for left haptic motor
-    right_pwm.stop() # Stop PWM for right haptic motor
-    GPIO.cleanup()  # Clean up GPIO settings
+        # Initialize GPIO
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.Left_Haptic_Pin, GPIO.OUT)
+        GPIO.setup(self.Right_Haptic_Pin, GPIO.OUT)
+        
+        # Initialize PWM
+        self.left_pwm = GPIO.PWM(self.Left_Haptic_Pin, self.PWM_Frequency)
+        self.right_pwm = GPIO.PWM(self.Right_Haptic_Pin, self.PWM_Frequency)
+        
+        # Start with motors off
+        self.left_pwm.start(0)
+        self.right_pwm.start(0)
+    
+    def activate_left(self, intensity=100, duration=0.5):
+        """Activate the left motor with a given intensity (0-100) and duration (seconds)."""
+        self.left_pwm.ChangeDutyCycle(intensity)
+        time.sleep(duration)
+        self.left_pwm.ChangeDutyCycle(0)  # Turn off after duration
+    
+    def activate_right(self, intensity=100, duration=0.5):
+        """Activate the right motor with a given intensity (0-100) and duration (seconds)."""
+        self.right_pwm.ChangeDutyCycle(intensity)
+        time.sleep(duration)
+        self.right_pwm.ChangeDutyCycle(0)  # Turn off after duration
+    
+    def deactivate_all(self):
+        """Turn off both motors."""
+        self.left_pwm.ChangeDutyCycle(0)
+        self.right_pwm.ChangeDutyCycle(0)
+    
+    def cleanup(self):
+        """Clean up GPIO resources. Call this before exiting."""
+        self.deactivate_all()
+        self.left_pwm.stop()
+        self.right_pwm.stop()
+        GPIO.cleanup()
