@@ -204,6 +204,7 @@ if __name__ == "__main__":
             if last_results:
                 labels = get_labels()
                 img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
+                img_height = picam2.camera_configuration()['main']['size'][1] if picam2 else 720
                 
                 for detection in last_results:
                     try:
