@@ -14,7 +14,7 @@ class SpeechAnnouncer:
         self.gap = 10
         self.capital_emphasis = 20
         self.default_cooldown = 1.5
-        self.ahead_cooldown = 1.0  # lowered as you wanted
+        self.ahead_cooldown = 2.0  # lowered as you wanted
         self.recent_objects = {}  # Changed from deque to dict
         self.lock = Lock()
 
