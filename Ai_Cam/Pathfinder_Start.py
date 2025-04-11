@@ -218,7 +218,7 @@ if __name__ == "__main__":
                         label = labels[int(detection.category)]
                         position = get_position(detection, img_width)
 
-                        speaker.announce(f"{label}, {position}")
+                        speaker.announce(f"{label} {position}")
 
                         if position == "left":
                             haptic.activate_left(intensity=100, duration=0.3)
