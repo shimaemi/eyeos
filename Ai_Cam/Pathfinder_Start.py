@@ -237,7 +237,7 @@ if __name__ == "__main__":
             else:
                 distance = lidar_sensor.read_distance()
                 if distance is not None and distance < wall_distance_threshold_cm:
-                    speaker.announce("Wall detected ahead!")
+                    speaker.announce("Wall detected ahead")
                     haptic.activate_left(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
                     haptic.activate_right(intensity=150, duration=1)  # Stronger haptic feedback when a wall is detected
 
