@@ -217,46 +217,69 @@ if __name__ == "__main__":
     last_results = None
     picam2.pre_callback = draw_detections
 
+    # Track the last announced object
+    last_announced_object = None
+    last_announce_time = 0
+    announce_cooldown = 3.0  # seconds
+
     try:
         while True:
             # Capture detections and lidar distance
-            last_results = parse_detections(picam2.capture_metadata())
+            metadata = picam2.capture_metadata()
+            last_results = parse_detections(metadata)
             lidar_distance = check_lidar_proximity()
+            img_width, img_height = picam2.camera_configuration()['main']['size']
 
-            # If no object detected by camera and lidar reads something close
+            # Wall detection (LIDAR priority)
             if not last_results and detect_wall_using_lidar(lidar_distance):
-                print(f"Wall detected using lidar! Distance: {lidar_distance:.2f} meters")
-                speaker.announce("Wall detected ahead")
-                haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
+                current_time = time.time()
+                if current_time - last_announce_time >= announce_cooldown:
+                    print(f"Wall detected using lidar! Distance: {lidar_distance:.2f} meters")
+                    speaker.announce("Wall detected ahead")
+                    haptic.activate_both(intensity=100, duration=1)
+                    last_announce_time = current_time
+                    last_announced_object = "wall"
+                continue
 
+            # Object detection handling
             if last_results:
                 labels = get_labels()
-                img_width = picam2.camera_configuration()['main']['size'][0] if picam2 else 1280
-                img_height = picam2.camera_configuration()['main']['size'][1] if picam2 else 720
-            
+                current_time = time.time()
+                
+                # Find the most prominent detection (largest area)
+                best_detection = None
+                max_area = 0
                 for detection in last_results:
-                    try:
-                        label = labels[int(detection.category)]
-                        position, proximity = get_position_and_proximity(detection, img_width, img_height)
+                    x, y, w, h = detection.box
+                    current_area = w * h
+                    if current_area > max_area:
+                        max_area = current_area
+                        best_detection = detection
 
-                        # Announce object detections
-                        if proximity:  # Announce only if proximity is "incoming", "close", or "very close"
-                            speaker.announce(f"{label} {proximity} {position}")
-
+                if best_detection:
+                    label = labels[int(best_detection.category)]
+                    position, proximity = get_position_and_proximity(best_detection, img_width, img_height)
+                    
+                    # Create unique identifier for this object
+                    current_object_id = f"{label}_{position}"
+                    
+                    # Only announce if:
+                    # 1. We have proximity info
+                    # 2. It's either a new object or cooldown has expired
+                    # 3. We're not currently announcing something else
+                    if proximity and (current_object_id != last_announced_object or 
+                                    current_time - last_announce_time >= announce_cooldown):
+                        speaker.announce(f"{label} {proximity} {position}")
+                        
+                        # Trigger haptic feedback
                         if position == "left":
                             haptic.activate_left(intensity=100, duration=0.3)
                         elif position == "right":
                             haptic.activate_right(intensity=100, duration=0.3)
-
-                    except Exception as e:
-                        print(f"Speech error: {e}")
-
-            else:
-                distance = lidar_sensor.read_distance()
-                if distance is not None and distance < wall_distance_threshold_cm:
-                    speaker.announce("Wall detected ahead")
-                    haptic.activate_left(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected
-                    haptic.activate_right(intensity=100, duration=1)  # Stronger haptic feedback when a wall is detected                                    
+                            
+                        # Update tracking
+                        last_announced_object = current_object_id
+                        last_announce_time = current_time
 
             time.sleep(0.01)
         
@@ -268,4 +291,5 @@ if __name__ == "__main__":
         picam2.close()
         haptic.cleanup()
         lidar_sensor.close()
+        speaker.cleanup()
         print("Cleanup completed")

@@ -6,51 +6,66 @@ from queue import Queue
 class SpeechAnnouncer:
     def __init__(self):
         """
-        Thread-safe TTS announcer with anti-spam and no overlapping speech.
+        Single-object TTS announcer that:
+        - Only announces one object at a time
+        - Blocks new detections during announcement
+        - Maintains cooldown periods
         """
+        # TTS Configuration
         self.voice = "en-us+m3"
         self.speed = 135
         self.pitch = 45
         self.gap = 10
         self.capital_emphasis = 20
-        self.default_cooldown = 5.0
-        self.ahead_cooldown = 3.0
-        self.recent_objects = {}  # Tracks last announcement time per phrase
-        self.announcement_queue = Queue()  # Thread-safe queue
-        self.speaking = False  # Flag to check if currently speaking
+        
+        # Announcement control
+        self.cooldown = 3.0  # Minimum time between announcements
+        self.last_announce_time = 0
+        self.current_object = None
         self.lock = threading.Lock()
+        self.speaking = False
+        self.new_object_event = threading.Event()
         self.stop_event = threading.Event()
         
-        # Start the announcement processing thread
+        # Start processing thread
         self.process_thread = threading.Thread(
-            target=self._process_queue,
+            target=self._process_announcements,
             daemon=True
         )
         self.process_thread.start()
 
-    def announce(self, text, position="ahead"):
-        """Add an announcement to the queue (non-blocking)."""
+    def announce(self, text):
+        """
+        Request an announcement for a single object.
+        Returns True if announcement was queued, False if rejected.
+        """
         with self.lock:
             current_time = time.time()
-            cooldown = self.ahead_cooldown if position == "ahead" else self.default_cooldown
             
-            # Check cooldown
-            last_time = self.recent_objects.get(text, 0)
-            if current_time - last_time < cooldown:
-                return  # Skip if cooldown is active
+            # Reject if:
+            # 1. Already speaking, OR
+            # 2. On cooldown, OR
+            # 3. Same object as last time
+            if (self.speaking or 
+                current_time - self.last_announce_time < self.cooldown or
+                text == self.current_object):
+                return False
             
-            # Add to queue
-            self.announcement_queue.put((text, position))
-            self.recent_objects[text] = current_time
+            self.current_object = text
+            self.new_object_event.set()
+            return True
 
-    def _process_queue(self):
-        """Process announcements sequentially in a background thread."""
+    def _process_announcements(self):
+        """Process announcements one at a time"""
         while not self.stop_event.is_set():
-            if not self.announcement_queue.empty() and not self.speaking:
-                text, position = self.announcement_queue.get()
-                self.speaking = True
+            # Wait for new object detection
+            self.new_object_event.wait()
+            
+            if self.stop_event.is_set():
+                break
                 
-                # Generate the espeak command
+            self.speaking = True
+            try:
                 cmd = [
                     'espeak',
                     '-v', self.voice,
@@ -59,15 +74,16 @@ class SpeechAnnouncer:
                     '-g', str(self.gap),
                     '-k', str(self.capital_emphasis),
                     '--punct',
-                    text
+                    self.current_object
                 ]
-                
-                # Blocking call to ensure no overlap
                 subprocess.run(cmd, stderr=subprocess.DEVNULL)
+                self.last_announce_time = time.time()
+            finally:
                 self.speaking = False
-            time.sleep(0.1)  # Reduce CPU usage
+                self.new_object_event.clear()
 
     def cleanup(self):
-        """Stop the processing thread and clear resources."""
+        """Stop the announcer and clean up resources"""
         self.stop_event.set()
+        self.new_object_event.set()  # Unblock thread if waiting
         self.process_thread.join()
