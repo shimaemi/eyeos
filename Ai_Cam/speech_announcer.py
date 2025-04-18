@@ -19,7 +19,7 @@ class SpeechAnnouncer:
         self.capital_emphasis = 20
         
         # Announcement control
-        self.cooldown = 3.0  # Minimum time between announcements
+        self.cooldown = 2.0  # Minimum time between announcements
         self.last_announce_time = 0
         self.current_object = None
         self.lock = threading.Lock()
