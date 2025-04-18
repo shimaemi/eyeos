@@ -172,7 +172,7 @@ def get_args():
     parser.add_argument("--bbox-order", choices=["yx", "xy"], default="yx")
     parser.add_argument("--threshold", type=float, default=0.65)
     parser.add_argument("--iou", type=float, default=0.65)
-    parser.add_argument("--max-detections", type=int, default=10)
+    parser.add_argument("--max-detections", type=int, default=1)
     parser.add_argument("--ignore-dash-labels", action=argparse.BooleanOptionalAction)
     parser.add_argument("--postprocess", choices=["", "nanodet"], default=None)
     parser.add_argument("-r", "--preserve-aspect-ratio", action=argparse.BooleanOptionalAction)
