@@ -5,7 +5,7 @@ import time
 class TFLuna:
     def __init__(self, baudrate=115200):
         # Initialize the sensor with the default serial port '/dev/serial0'
-        self.ser = serial.Serial('/dev/serial0', baudrate, timeout=0)  # Default port set here
+        self.ser = serial.Serial('/dev/ttyS0', baudrate, timeout=0)  # Default port set here
 
     def read_distance(self):
         """Read the distance from the TF Luna sensor"""
