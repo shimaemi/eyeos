@@ -1,1 +1,1 @@
-[Presentation1 (1).pdf](https://github.com/user-attachments/files/20112663/Presentation1.1.pdf)
+![Presentation1 (1)](https://github.com/user-attachments/assets/d5426a45-76ff-4b3b-80c9-deb2ed23262c)
