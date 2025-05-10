@@ -1,0 +1,232 @@
+Alright, let's break down your code step by step as if you're completely new to this. I'll explain each section, what it's doing, and why it's necessary.
+
+---
+
+## **1. Importing Libraries**
+```python
+import argparse
+import sys
+from functools import lru_cache
+
+import cv2
+import numpy as np
+
+from picamera2 import MappedArray, Picamera2
+from picamera2.devices import IMX500
+from picamera2.devices.imx500 import (NetworkIntrinsics,
+                                      postprocess_nanodet_detection)
+```
+### **What This Does:**
+- `argparse`: Helps process command-line arguments (e.g., specifying the model file when running the script).
+- `sys`: Provides system-related functions (e.g., exiting the script on an error).
+- `lru_cache`: A decorator to cache results of functions, speeding up repeated calls.
+- `cv2`: OpenCV library for image processing.
+- `numpy`: Used for handling arrays and numerical data (like the AI model's output).
+- `picamera2`: Library for interfacing with the Raspberry Pi Camera.
+- `IMX500`: A specific class for the Sony IMX500 AI camera.
+- `NetworkIntrinsics`: Helps retrieve settings and properties for the AI model.
+- `postprocess_nanodet_detection`: A function that processes raw AI model output into usable detections.
+
+---
+
+## **2. Setting Up Global Variables**
+```python
+last_detections = []
+```
+### **What This Does:**
+- `last_detections`: Stores the last detected objects so the program can reference them even if the current frame has no new detections.
+
+---
+
+## **3. Creating a Detection Class**
+```python
+class Detection:
+    def __init__(self, coords, category, conf, metadata):
+        """Create a Detection object, recording the bounding box, category, and confidence."""
+        self.category = category
+        self.conf = conf
+        self.box = imx500.convert_inference_coords(coords, metadata, picam2)
+```
+### **What This Does:**
+- Defines a `Detection` class to store:
+  - `category`: The object type (e.g., "car", "person").
+  - `conf`: The confidence score (how sure the model is).
+  - `box`: The bounding box (where the object is in the image).
+- Converts coordinates from the AI model’s format to actual pixel positions.
+
+---
+
+## **4. Parsing Detections**
+```python
+def parse_detections(metadata: dict):
+    """Parse the output tensor into detected objects, scaled to the ISP output."""
+```
+This function takes AI model output (`metadata`), processes it, and stores the detected objects.
+
+### **Steps Inside This Function:**
+```python
+global last_detections
+bbox_normalization = intrinsics.bbox_normalization
+bbox_order = intrinsics.bbox_order
+threshold = args.threshold
+iou = args.iou
+max_detections = args.max_detections
+```
+- Retrieves settings from the AI model, such as:
+  - Bounding box format (`bbox_order`).
+  - Detection confidence threshold (`threshold`).
+  - Maximum number of objects to detect (`max_detections`).
+
+```python
+np_outputs = imx500.get_outputs(metadata, add_batch=True)
+input_w, input_h = imx500.get_input_size()
+if np_outputs is None:
+    return last_detections
+```
+- Gets AI model outputs and input image size.
+- If there are no detections, it returns the last known detections.
+
+```python
+if intrinsics.postprocess == "nanodet":
+    boxes, scores, classes = \
+        postprocess_nanodet_detection(outputs=np_outputs[0], conf=threshold, iou_thres=iou,
+                                      max_out_dets=max_detections)[0]
+```
+- If the AI model uses the **NanoDet** format, it processes the detections accordingly.
+
+```python
+    from picamera2.devices.imx500.postprocess import scale_boxes
+    boxes = scale_boxes(boxes, 1, 1, input_h, input_w, False, False)
+```
+- **Scales** the bounding boxes to match the original image size.
+
+```python
+last_detections = [
+    Detection(box, category, score, metadata)
+    for box, score, category in zip(boxes, scores, classes)
+    if score > threshold
+]
+```
+- Stores all detections with a confidence score above the threshold.
+
+---
+
+## **5. Caching Labels**
+```python
+@lru_cache
+def get_labels():
+    labels = intrinsics.labels
+    if intrinsics.ignore_dash_labels:
+        labels = [label for label in labels if label and label != "-"]
+    return labels
+```
+- Uses caching to store the labels (e.g., "dog", "cat") so they don’t have to be reloaded every time.
+
+---
+
+## **6. Drawing Detections on the Image**
+```python
+def draw_detections(request, stream="main"):
+    """Draw the detections for this request onto the ISP output."""
+    detections = last_results
+    if detections is None:
+        return
+```
+- Draws detected objects on the camera output.
+
+```python
+    with MappedArray(request, stream) as m:
+        for detection in detections:
+            x, y, w, h = detection.box
+            label = f"{labels[int(detection.category)]} ({detection.conf:.2f})"
+```
+- Loops through detections and extracts bounding box data.
+- Creates a label with the object name and confidence score.
+
+```python
+            # Draw rectangle background with transparency
+            overlay = m.array.copy()
+            cv2.rectangle(overlay, (text_x, text_y - text_height),
+                          (text_x + text_width, text_y + baseline),
+                          (255, 255, 255), cv2.FILLED)
+
+            alpha = 0.30
+            cv2.addWeighted(overlay, alpha, m.array, 1 - alpha, 0, m.array)
+```
+- Draws a semi-transparent rectangle as a background for the text.
+
+```python
+            # Draw text and bounding box
+            cv2.putText(m.array, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+            cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), thickness=2)
+```
+- Draws the label and the bounding box in green.
+
+---
+
+## **7. Parsing Command-Line Arguments**
+```python
+def get_args():
+    parser = argparse.ArgumentParser()
+```
+- Creates an argument parser for user-defined settings (e.g., model path, FPS, thresholds).
+
+```python
+parser.add_argument("--model", type=str, help="Path of the model",
+                    default="/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk")
+```
+- Allows specifying a different AI model.
+
+```python
+parser.add_argument("--threshold", type=float, default=0.55, help="Detection threshold")
+```
+- Sets a default detection confidence threshold of 55%.
+
+```python
+return parser.parse_args()
+```
+- Returns the user-defined arguments.
+
+---
+
+## **8. Running the Main Program**
+```python
+if __name__ == "__main__":
+    args = get_args()
+```
+- Parses user arguments.
+
+```python
+imx500 = IMX500(args.model)
+intrinsics = imx500.network_intrinsics
+```
+- Loads the AI model.
+
+```python
+picam2 = Picamera2(imx500.camera_num)
+config = picam2.create_preview_configuration(controls={"FrameRate": intrinsics.inference_rate}, buffer_count=12)
+```
+- Configures the Raspberry Pi camera.
+
+```python
+picam2.start(config, show_preview=True)
+```
+- Starts the camera.
+
+```python
+picam2.pre_callback = draw_detections
+while True:
+    last_results = parse_detections(picam2.capture_metadata())
+```
+- **Continuously detects objects** and **draws** them on the image.
+
+---
+
+### **Final Thoughts**
+This script runs **real-time object detection** using an **IMX500 AI Camera** on a **Raspberry Pi Zero 2 W**. It:
+1. Loads an AI model.
+2. Captures camera frames.
+3. Processes detections.
+4. Draws results on the screen.
+
+Want to customize it? Let me know! 🚀
